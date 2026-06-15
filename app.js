@@ -40,24 +40,26 @@ let tables = [
   { id: 15, zone: 'Outside', capacity: '3-6 คน', status: 'available', orders: [], position: { left: '10%', top: '52%', width: '15%', height: '40%' } },
 ];
 
-// Fallback menu (used when Supabase is not configured)
+// Fallback menu (used when localStorage has no data yet)
 const fallbackMenu = [
-  { name: 'ตำข้าวโพด + ปลากรอบ', price: 60,  category: 'ส้มตำ' },
-  { name: 'ตำกุ้งสด',             price: 60,  category: 'ส้มตำ' },
-  { name: 'ส้มตำไทย',             price: 50,  category: 'ส้มตำ' },
-  { name: 'ข้าวเหนียว',           price: 10,  category: 'ข้าว/เส้น' },
-  { name: 'เส้นลวก',              price: 10,  category: 'ข้าว/เส้น' },
-  { name: 'คอหมูย่าง',            price: 80,  category: 'อาหาร' },
-  { name: 'ไก่ย่างครึ่งตัว',      price: 120, category: 'อาหาร' },
-  { name: 'น้ำตกหมู',             price: 70,  category: 'อาหาร' },
-  { name: 'ลาบหมู',               price: 65,  category: 'อาหาร' },
-  { name: 'โค้ก',                 price: 20,  category: 'เครื่องดื่ม' },
-  { name: 'น้ำเปล่า + น้ำแข็ง',   price: 15,  category: 'เครื่องดื่ม' },
+  { name: 'ตำปลาร้า',          price: 30,  category: 'เมนูตำ',              is_active: true },
+  { name: 'ตำปู',               price: 30,  category: 'เมนูตำ',              is_active: true },
+  { name: 'ตำไทย',              price: 30,  category: 'เมนูตำ',              is_active: true },
+  { name: 'ตำกุ้งสด',           price: 60,  category: 'เมนูตำ',              is_active: true },
+  { name: 'ตำทะเล',             price: 80,  category: 'เมนูตำ',              is_active: true },
+  { name: 'ลาบหมู',             price: 60,  category: 'เมนูลาบ-ก้อย',        is_active: true },
+  { name: 'ลาบไก่',             price: 60,  category: 'เมนูลาบ-ก้อย',        is_active: true },
+  { name: 'คอหมูย่าง',          price: 80,  category: 'เมนูย่าง-ทอด-อบ',      is_active: true },
+  { name: 'กะเพราหมู',          price: 40,  category: 'เมนูอาหารจานเดียว',    is_active: true },
+  { name: 'ข้าวเหนียว',         price: 10,  category: 'เมนูข้าว/เครื่องเคียง', is_active: true },
+  { name: 'โค้ก(เล็ก)',         price: 20,  category: 'เครื่องดื่ม',          is_active: true },
+  { name: 'น้ำเปล่า(เล็ก)',     price: 10,  category: 'เครื่องดื่ม',          is_active: true },
 ];
 
-let menuCatalog  = [];
-let activeTableId = null;
-let totalRevenue  = 0;
+let menuCatalog      = [];
+let activeTableId    = null;
+let totalRevenue     = 0;
+let selectedMenuIndex = null;
 
 function loadTodayRevenue() {
   try {
@@ -264,6 +266,14 @@ function populateMenuCatalog() {
   if (!dropdown) return;
   dropdown.innerHTML = '';
 
+  // Placeholder
+  const placeholder = document.createElement('option');
+  placeholder.value    = '';
+  placeholder.disabled = true;
+  placeholder.selected = true;
+  placeholder.innerText = '— เลือกหมวดหมู่ / เมนู —';
+  dropdown.appendChild(placeholder);
+
   // Group by category using <optgroup>
   const groups = {};
   menuCatalog.forEach((item, index) => {
@@ -288,10 +298,68 @@ function populateMenuCatalog() {
 function showAddMenuPanel() {
   document.getElementById('add-menu-panel').classList.remove('hidden');
   document.getElementById('add-menu-qty').value = 1;
+  selectedMenuIndex = null;
+  const searchInput = document.getElementById('menu-search-input');
+  if (searchInput) searchInput.value = '';
+  document.getElementById('menu-search-results').classList.add('hidden');
+  document.getElementById('selected-menu-display').classList.add('hidden');
+  document.getElementById('selected-menu-empty').classList.remove('hidden');
+  const dropdown = document.getElementById('menu-item-select');
+  if (dropdown) dropdown.value = '';
+  setTimeout(() => { if (searchInput) searchInput.focus(); }, 50);
 }
 
 function hideAddMenuPanel() {
   document.getElementById('add-menu-panel').classList.add('hidden');
+}
+
+function filterMenuSearch(query) {
+  const resultsEl = document.getElementById('menu-search-results');
+  if (!resultsEl) return;
+  const q = query.toLowerCase().trim();
+  if (!q) { resultsEl.classList.add('hidden'); return; }
+
+  const matches = menuCatalog
+    .map((item, index) => ({ ...item, index }))
+    .filter(item =>
+      item.name.toLowerCase().includes(q) ||
+      (item.category || '').toLowerCase().includes(q)
+    )
+    .slice(0, 20);
+
+  if (matches.length === 0) {
+    resultsEl.innerHTML = `<div class="px-4 py-3 text-xs text-stone-400 text-center">ไม่พบเมนู "${query}"</div>`;
+  } else {
+    resultsEl.innerHTML = matches.map(item => `
+      <div onclick="selectMenuItem(${item.index})"
+        class="px-3 py-2.5 cursor-pointer hover:bg-orange-50 flex items-center justify-between gap-2 transition-colors">
+        <div class="min-w-0">
+          <div class="text-sm font-semibold text-stone-800 truncate">${item.name}</div>
+          <div class="text-[10px] text-stone-400 mt-0.5">${item.category || ''}</div>
+        </div>
+        <span class="text-sm font-bold text-orange-500 shrink-0">฿${item.price}</span>
+      </div>`).join('');
+  }
+  resultsEl.classList.remove('hidden');
+}
+
+function selectMenuItem(index) {
+  selectedMenuIndex = index;
+  const item = menuCatalog[index];
+  if (!item) return;
+
+  const dropdown = document.getElementById('menu-item-select');
+  if (dropdown) dropdown.value = index;
+
+  document.getElementById('selected-menu-name').innerText     = item.name;
+  document.getElementById('selected-menu-category').innerText = item.category || '';
+  document.getElementById('selected-menu-price').innerText    = `฿${item.price}`;
+  document.getElementById('selected-menu-display').classList.remove('hidden');
+  document.getElementById('selected-menu-empty').classList.add('hidden');
+
+  const searchInput = document.getElementById('menu-search-input');
+  if (searchInput) searchInput.value = '';
+  document.getElementById('menu-search-results').classList.add('hidden');
 }
 
 function handleAddMenuItem() {
@@ -299,10 +367,9 @@ function handleAddMenuItem() {
   const table = tables.find(t => t.id === activeTableId);
   if (!table || table.status !== 'occupied') return;
 
-  const dropdown = document.getElementById('menu-item-select');
-  const selected = menuCatalog[dropdown.value];
+  const selected = selectedMenuIndex !== null ? menuCatalog[selectedMenuIndex] : null;
   const qty      = parseInt(document.getElementById('add-menu-qty').value) || 1;
-  if (!selected) return;
+  if (!selected) { showNotification('กรุณาเลือกเมนูอาหารก่อน'); return; }
 
   const existing = table.orders.find(o => o.menu === selected.name);
   if (existing) {
@@ -612,4 +679,20 @@ function setupEventListeners() {
   document.getElementById('btn-confirm-check-bill-cancel').addEventListener('click', hideCheckBillConfirm);
   document.getElementById('btn-confirm-check-bill-ok').addEventListener('click', handleCheckBill);
   window.addEventListener('keydown', e => { if (e.key === 'Escape') closeDetailsDrawer(); });
+
+  const menuSearchInput = document.getElementById('menu-search-input');
+  if (menuSearchInput) {
+    menuSearchInput.addEventListener('input', () => filterMenuSearch(menuSearchInput.value));
+    menuSearchInput.addEventListener('blur', () => {
+      setTimeout(() => document.getElementById('menu-search-results')?.classList.add('hidden'), 200);
+    });
+  }
+
+  const menuItemSelect = document.getElementById('menu-item-select');
+  if (menuItemSelect) {
+    menuItemSelect.addEventListener('change', () => {
+      const idx = parseInt(menuItemSelect.value);
+      if (!isNaN(idx)) selectMenuItem(idx);
+    });
+  }
 }
