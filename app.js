@@ -681,11 +681,18 @@ function setupEventListeners() {
   window.addEventListener('keydown', e => { if (e.key === 'Escape') closeDetailsDrawer(); });
 
   const menuSearchInput = document.getElementById('menu-search-input');
+  const menuSearchResults = document.getElementById('menu-search-results');
   if (menuSearchInput) {
     menuSearchInput.addEventListener('input', () => filterMenuSearch(menuSearchInput.value));
     menuSearchInput.addEventListener('blur', () => {
       setTimeout(() => document.getElementById('menu-search-results')?.classList.add('hidden'), 200);
     });
+    // Prevent blur when clicking on search results
+    if (menuSearchResults) {
+      menuSearchResults.addEventListener('mousedown', (e) => {
+        e.preventDefault();
+      });
+    }
   }
 
   const menuItemSelect = document.getElementById('menu-item-select');
