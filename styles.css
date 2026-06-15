@@ -1,0 +1,255 @@
+/* ============================================================
+   Fonts
+   ============================================================ */
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap');
+
+:root {
+  --font-thai: 'Noto Sans Thai', sans-serif;
+  --font-eng:  'Outfit', sans-serif;
+
+  /* Brand */
+  --orange-400: #fb923c;
+  --orange-500: #f97316;
+  --orange-600: #ea580c;
+
+  /* Table status */
+  --color-available:      #fde68a;
+  --color-available-text: #78350f;
+  --color-available-border: #fcd34d;
+  --color-occupied:       #fecaca;
+  --color-occupied-text:  #7f1d1d;
+  --color-occupied-border: #fca5a5;
+  --color-selected:       #f97316;
+
+  /* Zone backgrounds */
+  --zone-inside-bg:     #fff7ed;
+  --zone-inside-border: #fed7aa;
+  --zone-outside-bg:    #f0fdf4;
+  --zone-outside-border:#bbf7d0;
+}
+
+/* ============================================================
+   Base
+   ============================================================ */
+body {
+  font-family: var(--font-thai);
+  color: #1c1917;
+  -webkit-font-smoothing: antialiased;
+}
+
+.font-eng { font-family: var(--font-eng); }
+
+/* ============================================================
+   Login Page
+   ============================================================ */
+.login-page {
+  background-color: #fafaf9;
+  background-image: radial-gradient(circle at 20% 80%, rgba(251, 146, 60, 0.08) 0%, transparent 50%),
+                    radial-gradient(circle at 80% 20%, rgba(249, 115, 22, 0.06) 0%, transparent 50%);
+}
+
+.brand-logo {
+  background: linear-gradient(135deg, var(--orange-400), var(--orange-600));
+}
+
+/* PIN dots */
+.pin-dot {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 2px solid #d6d3d1;
+  background: transparent;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.pin-dot.pin-dot-filled {
+  background: var(--orange-500);
+  border-color: var(--orange-500);
+  transform: scale(1.15);
+  box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.2);
+}
+
+/* Numpad buttons */
+.numpad-key {
+  height: 58px;
+  border-radius: 14px;
+  background: #f5f5f4;
+  color: #1c1917;
+  font-size: 22px;
+  font-weight: 700;
+  font-family: var(--font-eng);
+  border: 1.5px solid #e7e5e4;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+
+.numpad-key:hover {
+  background: var(--orange-500);
+  color: #fff;
+  border-color: var(--orange-500);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(249, 115, 22, 0.35);
+}
+
+.numpad-key:active {
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+.numpad-key-alt {
+  font-size: 13px;
+  font-family: var(--font-thai);
+  font-weight: 600;
+  color: #78716c;
+}
+
+.numpad-key-alt:hover {
+  background: #e7e5e4;
+  color: #44403c;
+  border-color: #d6d3d1;
+  transform: none;
+  box-shadow: none;
+}
+
+/* ============================================================
+   Floor Map — Zone Containers
+   ============================================================ */
+.zone-inside {
+  background-color: var(--zone-inside-bg);
+  border: 2px solid var(--zone-inside-border);
+  border-radius: 1.25rem;
+  position: relative;
+  transition: background-color 0.3s ease;
+}
+
+.zone-outside {
+  background-color: var(--zone-outside-bg);
+  border: 2px solid var(--zone-outside-border);
+  border-radius: 1.25rem;
+  position: relative;
+  transition: background-color 0.3s ease;
+}
+
+/* ============================================================
+   Table Cards
+   ============================================================ */
+.table-card {
+  position: absolute;
+  border-radius: 0.875rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border: 2px solid transparent;
+  user-select: none;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  gap: 2px;
+}
+
+.table-card:hover {
+  transform: translateY(-4px) scale(1.04);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.12);
+  z-index: 5;
+}
+
+.table-card:active {
+  transform: translateY(0) scale(0.97);
+}
+
+.table-num {
+  font-family: var(--font-eng);
+  font-weight: 800;
+  font-size: 1.35rem;
+  line-height: 1;
+}
+
+.table-sub {
+  font-family: var(--font-thai);
+  font-size: 9px;
+  font-weight: 600;
+  opacity: 0.7;
+  line-height: 1;
+  text-align: center;
+  padding: 0 4px;
+}
+
+/* Available */
+.table-card.status-available {
+  background-color: var(--color-available);
+  border-color: var(--color-available-border);
+  color: var(--color-available-text);
+}
+
+/* Occupied */
+.table-card.status-occupied {
+  background-color: var(--color-occupied);
+  border-color: var(--color-occupied-border);
+  color: var(--color-occupied-text);
+}
+
+/* Selected */
+.table-card.state-selected {
+  background-color: var(--color-selected) !important;
+  border-color: #ea580c !important;
+  color: #fff !important;
+  transform: scale(1.07);
+  z-index: 10;
+  box-shadow: 0 0 0 4px rgba(249, 115, 22, 0.3), 0 12px 24px rgba(249, 115, 22, 0.25);
+  animation: pulse-orange 2s infinite;
+}
+
+@keyframes pulse-orange {
+  0%   { box-shadow: 0 0 0 0   rgba(249,115,22,0.5), 0 12px 24px rgba(249,115,22,0.2); }
+  70%  { box-shadow: 0 0 0 8px rgba(249,115,22,0),   0 12px 24px rgba(249,115,22,0.2); }
+  100% { box-shadow: 0 0 0 0   rgba(249,115,22,0),   0 12px 24px rgba(249,115,22,0.2); }
+}
+
+/* Dimmed */
+.table-card.state-dimmed {
+  background-color: #e7e5e4 !important;
+  border-color: #d6d3d1 !important;
+  color: #a8a29e !important;
+  opacity: 0.45;
+  pointer-events: none;
+  box-shadow: none;
+  transform: none;
+}
+
+/* ============================================================
+   Scrollbar
+   ============================================================ */
+::-webkit-scrollbar       { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: #f5f5f4; }
+::-webkit-scrollbar-thumb { background: #d6d3d1; border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: #a8a29e; }
+
+/* ============================================================
+   Animations
+   ============================================================ */
+.fade-in {
+  animation: fadeIn 0.2s ease-out forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ============================================================
+   Receipt Print Area
+   ============================================================ */
+#receipt-print-area {
+  width: 80mm;
+  background-color: #fff !important;
+  color: #000 !important;
+  display: block;
+  position: fixed;
+  top: -9999px;
+  left: -9999px;
+}

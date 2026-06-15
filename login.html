@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>แซ่บนัว — เข้าสู่ระบบ</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="login-page min-h-screen flex items-center justify-center p-4">
+
+  <div class="w-full max-w-[340px] flex flex-col items-center">
+
+    <!-- Card -->
+    <div class="w-full bg-white rounded-3xl shadow-2xl shadow-stone-300/40 p-9 flex flex-col items-center">
+
+      <!-- Brand -->
+      <div class="w-20 h-20 rounded-2xl brand-logo flex items-center justify-center text-white font-extrabold text-3xl mb-5 font-eng shadow-lg shadow-orange-300/50">
+        ZN
+      </div>
+      <h1 class="text-2xl font-extrabold text-stone-900 tracking-tight">แซ่บนัว</h1>
+      <p class="text-xs text-stone-400 font-medium mt-1 mb-8">Zabnua Restaurant · สาขากาญจนบุรี</p>
+
+      <!-- PIN label -->
+      <p class="text-[11px] font-bold text-stone-400 uppercase tracking-widest mb-5">ใส่ PIN เพื่อเข้าใช้งาน</p>
+
+      <!-- PIN dots -->
+      <div class="flex gap-5 mb-2" id="pin-display">
+        <div class="pin-dot"></div>
+        <div class="pin-dot"></div>
+        <div class="pin-dot"></div>
+        <div class="pin-dot"></div>
+      </div>
+
+      <!-- Error -->
+      <p id="pin-error" class="text-xs text-red-500 font-semibold h-5 mt-3 mb-5 opacity-0 transition-opacity duration-300 text-center">
+        PIN ไม่ถูกต้อง กรุณาลองใหม่อีกครั้ง
+      </p>
+
+      <!-- Numpad -->
+      <div class="grid grid-cols-3 gap-2.5 w-full">
+        <button class="numpad-key" onclick="pressPin('1')">1</button>
+        <button class="numpad-key" onclick="pressPin('2')">2</button>
+        <button class="numpad-key" onclick="pressPin('3')">3</button>
+        <button class="numpad-key" onclick="pressPin('4')">4</button>
+        <button class="numpad-key" onclick="pressPin('5')">5</button>
+        <button class="numpad-key" onclick="pressPin('6')">6</button>
+        <button class="numpad-key" onclick="pressPin('7')">7</button>
+        <button class="numpad-key" onclick="pressPin('8')">8</button>
+        <button class="numpad-key" onclick="pressPin('9')">9</button>
+        <button class="numpad-key numpad-key-alt text-sm" onclick="clearPin()">ล้าง</button>
+        <button class="numpad-key" onclick="pressPin('0')">0</button>
+        <button class="numpad-key numpad-key-alt flex items-center justify-center" onclick="backspacePin()">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2M3 12l6.414 6.414a2 2 0 001.414.586H19a2 2 0 002-2V7a2 2 0 00-2-2h-8.172a2 2 0 00-1.414.586L3 12z" />
+          </svg>
+        </button>
+      </div>
+
+    </div>
+
+    <p class="text-xs text-stone-400 mt-6 font-medium">แซ่บนัว POS System · v2.0</p>
+  </div>
+
+  <script src="login.js"></script>
+</body>
+</html>

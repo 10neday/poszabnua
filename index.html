@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>แซ่บนัว — Table Management & POS</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="bg-stone-50 min-h-screen flex flex-col antialiased">
+
+  <!-- ══════════════════════════════════════════════════════════
+       HEADER
+  ══════════════════════════════════════════════════════════ -->
+  <header class="bg-white border-b border-stone-100 sticky top-0 z-40 shadow-sm">
+    <div class="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between gap-6">
+
+      <!-- Brand -->
+      <div class="flex items-center gap-3 shrink-0">
+        <div class="w-10 h-10 rounded-xl brand-logo flex items-center justify-center text-white font-extrabold text-base font-eng shadow-md shadow-orange-200">ZN</div>
+        <div>
+          <h1 class="text-base font-extrabold text-stone-900 leading-tight tracking-tight">แซ่บนัว</h1>
+          <p class="text-[10px] text-stone-400 font-medium leading-none mt-0.5">Table Management & POS · Kanchanaburi</p>
+        </div>
+      </div>
+
+      <!-- Stats -->
+      <div class="flex items-center gap-3">
+
+        <!-- Occupied -->
+        <div class="flex items-center gap-2.5 bg-red-50 border border-red-100 rounded-xl px-4 py-2">
+          <span class="flex h-3 w-3 relative shrink-0">
+            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+            <span class="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
+          </span>
+          <div>
+            <div class="text-[9px] font-bold uppercase tracking-widest text-red-400">ไม่ว่าง</div>
+            <div id="stat-occupied" class="text-lg font-extrabold font-eng text-red-700 leading-none">0</div>
+          </div>
+        </div>
+
+        <!-- Available -->
+        <div class="flex items-center gap-2.5 bg-amber-50 border border-amber-100 rounded-xl px-4 py-2">
+          <span class="h-3 w-3 rounded-full bg-amber-400 shrink-0"></span>
+          <div>
+            <div class="text-[9px] font-bold uppercase tracking-widest text-amber-500">ว่าง</div>
+            <div id="stat-available" class="text-lg font-extrabold font-eng text-amber-700 leading-none">0</div>
+          </div>
+        </div>
+
+        <!-- Sales -->
+        <div class="flex items-center gap-2.5 bg-orange-50 border border-orange-100 rounded-xl px-4 py-2">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-orange-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <div>
+            <div class="text-[9px] font-bold uppercase tracking-widest text-orange-400">ยอดวันนี้</div>
+            <div id="stat-sales" class="text-lg font-extrabold font-eng text-orange-700 leading-none">฿0</div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Clock + Logout -->
+      <div class="flex items-center gap-4 shrink-0">
+        <div class="text-right">
+          <div id="header-time" class="text-base font-bold font-eng text-stone-800 leading-none"></div>
+          <div id="header-date" class="text-[10px] text-stone-400 font-medium mt-0.5"></div>
+        </div>
+        <a id="report-link" href="report.html" class="hidden flex items-center gap-1.5 text-xs font-semibold text-stone-500 hover:text-stone-800 bg-stone-100 hover:bg-stone-200 border border-stone-200 px-3 py-2 rounded-xl transition-all duration-200">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+          รายงาน
+        </a>
+        <a id="admin-link" href="admin.html" class="hidden flex items-center gap-1.5 text-xs font-semibold text-orange-600 hover:text-orange-700 bg-orange-50 hover:bg-orange-100 border border-orange-200 px-3 py-2 rounded-xl transition-all duration-200">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+          </svg>
+          จัดการเมนู
+        </a>
+        <button onclick="logout()" title="ออกจากระบบ" class="flex items-center gap-1.5 text-xs font-semibold text-stone-500 hover:text-red-600 bg-stone-100 hover:bg-red-50 border border-stone-200 hover:border-red-200 px-3 py-2 rounded-xl transition-all duration-200">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+          </svg>
+          ออกจากระบบ
+        </button>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- ══════════════════════════════════════════════════════════
+       MAIN
+  ══════════════════════════════════════════════════════════ -->
+  <main class="flex-grow max-w-7xl mx-auto w-full px-6 py-7 flex flex-col gap-5">
+
+    <!-- Section bar -->
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 bg-white px-5 py-4 rounded-2xl shadow-sm border border-stone-100">
+      <div>
+        <h2 class="text-base font-extrabold text-stone-900 tracking-tight">แผนผังร้านอาหาร</h2>
+        <p class="text-xs text-stone-400 mt-0.5">คลิกที่โต๊ะเพื่อเช็กอิน หรือจัดการออเดอร์</p>
+      </div>
+      <div class="flex items-center gap-5 text-xs font-semibold text-stone-500">
+        <div class="flex items-center gap-2">
+          <span class="w-4 h-4 rounded-md bg-amber-200 border border-amber-300"></span>
+          ว่าง (Available)
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="w-4 h-4 rounded-md bg-red-200 border border-red-300"></span>
+          ไม่ว่าง (Occupied)
+        </div>
+      </div>
+    </div>
+
+    <!-- Floor Map -->
+    <div class="bg-white p-7 rounded-3xl shadow-sm border border-stone-100 flex flex-col gap-7">
+
+      <!-- Inside Zone -->
+      <div class="grid grid-cols-12 items-center gap-5">
+        <div class="col-span-12 md:col-span-2 flex items-center md:justify-end">
+          <div class="text-right select-none">
+            <div class="text-3xl font-extrabold text-stone-800 tracking-tight leading-none">Inside</div>
+            <div class="text-[10px] font-bold text-stone-400 uppercase tracking-wider mt-1">ด้านใน</div>
+          </div>
+        </div>
+        <div class="col-span-12 md:col-span-10">
+          <div id="inside-zone-map" class="zone-inside w-full aspect-[2.6/1] min-h-[210px]"></div>
+        </div>
+      </div>
+
+      <div class="border-t border-stone-100"></div>
+
+      <!-- Outside Zone -->
+      <div class="grid grid-cols-12 items-center gap-5">
+        <div class="col-span-12 md:col-span-2 flex items-center md:justify-end">
+          <div class="text-right select-none">
+            <div class="text-3xl font-extrabold text-stone-800 tracking-tight leading-none">Outside</div>
+            <div class="text-[10px] font-bold text-stone-400 uppercase tracking-wider mt-1">ด้านนอก</div>
+          </div>
+        </div>
+        <div class="col-span-12 md:col-span-10">
+          <div id="outside-zone-map" class="zone-outside w-full aspect-[2.6/1] min-h-[210px]"></div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- ══════════════════════════════════════════════════════════
+       SIDE DRAWER
+  ══════════════════════════════════════════════════════════ -->
+  <div id="details-drawer" class="fixed top-0 right-0 h-full w-full sm:w-[480px] bg-white shadow-2xl z-50 transform translate-x-full transition-transform duration-300 ease-in-out border-l border-stone-200 flex flex-col">
+
+    <!-- Drawer Header -->
+    <div class="px-6 py-4 border-b border-stone-100 bg-stone-50 flex items-center justify-between gap-4">
+
+      <!-- Close -->
+      <button id="btn-close-drawer" class="w-9 h-9 rounded-full bg-red-500 text-white flex items-center justify-center hover:bg-red-600 transition-colors shadow-sm shrink-0" title="ปิด">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+        </svg>
+      </button>
+
+      <!-- Table info -->
+      <div class="text-center flex-grow">
+        <h4 id="drawer-table-num" class="text-lg font-extrabold text-stone-900 leading-tight">โต๊ะ 0</h4>
+        <div class="flex items-center justify-center gap-2 mt-1">
+          <span id="drawer-capacity" class="text-xs font-semibold text-stone-500 bg-stone-200 px-2.5 py-0.5 rounded-full">ขนาด: 0 คน</span>
+          <span id="drawer-table-zone" class="text-xs font-semibold text-stone-500 bg-stone-200 px-2.5 py-0.5 rounded-full">โซน...</span>
+        </div>
+      </div>
+
+      <!-- Status badge -->
+      <span id="drawer-status-badge" class="px-3 py-1.5 rounded-full text-white font-bold text-xs bg-green-500 shadow-sm shrink-0">ว่าง</span>
+
+    </div>
+
+    <!-- Drawer Body -->
+    <div class="flex-grow overflow-y-auto p-6 flex flex-col justify-between">
+
+      <!-- VIEW: AVAILABLE -->
+      <div id="view-available" class="hidden flex flex-col justify-center items-center flex-grow gap-8 py-16">
+        <div class="text-center max-w-xs">
+          <div class="w-20 h-20 rounded-2xl bg-amber-50 border border-amber-100 text-amber-500 flex items-center justify-center mx-auto mb-4 shadow-sm">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+            </svg>
+          </div>
+          <h4 class="text-lg font-extrabold text-stone-800">โต๊ะพร้อมใช้งาน</h4>
+          <p class="text-sm text-stone-400 mt-2 leading-relaxed">กดปุ่ม Check-In เพื่อเปิดโต๊ะ<br>และเริ่มต้นรับออเดอร์</p>
+        </div>
+        <button id="btn-check-in" class="w-full max-w-xs bg-orange-500 hover:bg-orange-600 text-white font-bold py-4 px-8 rounded-2xl shadow-lg shadow-orange-200 transition-all duration-200 text-base hover:-translate-y-0.5 active:translate-y-0 flex items-center justify-center gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+          </svg>
+          Check-In (เปิดโต๊ะ)
+        </button>
+      </div>
+
+      <!-- VIEW: OCCUPIED -->
+      <div id="view-occupied" class="hidden flex flex-col flex-grow justify-between gap-5">
+
+        <div class="flex flex-col gap-5">
+
+          <!-- Add Menu button -->
+          <div class="flex justify-center">
+            <button id="btn-expand-add-menu" class="bg-rose-500 hover:bg-rose-600 text-white font-bold py-2.5 px-6 rounded-full shadow-md shadow-rose-100 hover:shadow-lg transition-all duration-200 flex items-center gap-2 hover:-translate-y-0.5 text-sm">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+              </svg>
+              เพิ่มเมนูอาหาร
+            </button>
+          </div>
+
+          <!-- Add Menu Panel -->
+          <div id="add-menu-panel" class="hidden bg-stone-50 border border-stone-200 rounded-2xl p-4 flex flex-col gap-4 fade-in">
+            <h5 class="text-sm font-bold text-stone-700">สั่งรายการอาหาร</h5>
+            <div class="grid grid-cols-3 gap-3">
+              <div class="col-span-2">
+                <label class="block text-xs font-bold text-stone-400 mb-1.5">เมนูอาหาร</label>
+                <select id="menu-item-select" class="w-full bg-white border border-stone-200 rounded-xl px-3 py-2.5 text-sm text-stone-700 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent">
+                </select>
+              </div>
+              <div class="col-span-1">
+                <label class="block text-xs font-bold text-stone-400 mb-1.5">จำนวน</label>
+                <input id="add-menu-qty" type="number" min="1" value="1" class="w-full bg-white border border-stone-200 rounded-xl px-3 py-2.5 text-sm font-bold text-stone-700 text-center focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent">
+              </div>
+            </div>
+            <div class="flex justify-end gap-2">
+              <button id="btn-cancel-add-menu" class="px-4 py-2 text-xs font-bold text-stone-500 hover:bg-stone-100 rounded-xl transition-colors">ยกเลิก</button>
+              <button id="btn-confirm-add-menu" class="px-5 py-2 text-xs font-bold bg-green-500 hover:bg-green-600 text-white rounded-xl shadow-sm transition-colors">เพิ่มออเดอร์</button>
+            </div>
+          </div>
+
+          <!-- Order Summary -->
+          <div class="border border-stone-200 rounded-2xl overflow-hidden shadow-sm">
+            <div class="bg-stone-50 px-4 py-3 border-b border-stone-200">
+              <h5 class="text-xs font-bold uppercase tracking-wider text-stone-500">สรุปรายการสั่ง</h5>
+            </div>
+            <div class="max-h-[280px] overflow-y-auto bg-white">
+              <table class="w-full text-left text-sm border-collapse">
+                <thead>
+                  <tr class="bg-stone-50 border-b border-stone-100 text-[10px] font-bold uppercase tracking-wider text-stone-400">
+                    <th class="py-2.5 px-3 text-center w-10">#</th>
+                    <th class="py-2.5 px-3">เมนู</th>
+                    <th class="py-2.5 px-3 text-right w-16">ราคา</th>
+                    <th class="py-2.5 px-3 text-center w-24">จำนวน</th>
+                    <th class="py-2.5 px-3 text-right w-20">รวม</th>
+                  </tr>
+                </thead>
+                <tbody id="order-summary-body" class="divide-y divide-stone-100 font-medium text-stone-700">
+                </tbody>
+              </table>
+            </div>
+            <div class="bg-orange-50 border-t border-orange-100 px-4 py-3.5 flex justify-between items-center">
+              <span class="text-sm font-bold text-stone-600">ยอดรวม :</span>
+              <span id="order-total-amount" class="text-2xl font-extrabold font-eng text-orange-600">฿0</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Checkout -->
+        <div class="border-t border-stone-100 pt-5 mt-auto">
+          <button id="btn-check-bill" class="w-full bg-sky-500 hover:bg-sky-600 text-white font-bold py-4 px-6 rounded-2xl shadow-lg shadow-sky-100 hover:shadow-xl transition-all duration-200 text-base hover:-translate-y-0.5 active:translate-y-0 flex items-center justify-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+            </svg>
+            เช็คบิล (Check-Bill)
+          </button>
+
+          <!-- Confirm Panel (Phase 2 — with discount + split bill) -->
+          <div id="check-bill-confirm-panel" class="hidden bg-stone-50 border border-stone-200 rounded-2xl p-4 flex flex-col gap-0 fade-in mt-4">
+            <h5 class="text-sm font-extrabold text-stone-800 text-center mb-3">ยืนยันการชำระเงิน</h5>
+
+            <!-- Subtotal row -->
+            <div class="flex justify-between items-center py-2.5 border-b border-stone-200">
+              <span class="text-xs font-semibold text-stone-500">ยอดอาหาร</span>
+              <span id="bill-subtotal" class="text-sm font-bold font-eng text-stone-700">฿0</span>
+            </div>
+
+            <!-- Discount -->
+            <div class="py-3 border-b border-stone-200">
+              <div class="flex items-center justify-between mb-2.5">
+                <span class="text-xs font-semibold text-stone-500">ส่วนลด</span>
+                <div class="flex items-center gap-0.5 bg-stone-200 rounded-lg p-0.5">
+                  <button id="discount-mode-amount"  onclick="setDiscountMode('amount')"  class="discount-tab px-2.5 py-1 text-[11px] font-bold rounded-md bg-white text-stone-800 shadow-sm transition-all">฿ บาท</button>
+                  <button id="discount-mode-percent" onclick="setDiscountMode('percent')" class="discount-tab px-2.5 py-1 text-[11px] font-bold rounded-md text-stone-400 transition-all">% เปอร์เซ็นต์</button>
+                </div>
+              </div>
+              <input id="discount-input" type="number" min="0" value="0" placeholder="0" oninput="updateBillCalculation()" class="w-full bg-white border border-stone-200 rounded-xl px-4 py-2 text-sm font-bold font-eng text-stone-700 text-center focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent">
+            </div>
+
+            <!-- Final total -->
+            <div class="flex justify-between items-center py-2.5 border-b border-stone-200">
+              <span class="text-xs font-bold text-stone-600">ยอดสุทธิ</span>
+              <span id="bill-final-total" class="text-lg font-extrabold font-eng text-orange-600">฿0</span>
+            </div>
+
+            <!-- Split bill -->
+            <div class="py-3 border-b border-stone-200">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-semibold text-stone-500">แบ่งจ่าย (จำนวนคน)</span>
+                <div class="flex items-center gap-2">
+                  <button onclick="adjustSplit(-1)" class="w-7 h-7 rounded-full bg-stone-200 hover:bg-stone-300 text-stone-600 flex items-center justify-center font-bold text-base leading-none transition-colors">−</button>
+                  <span id="split-count" class="w-8 text-center font-bold font-eng text-stone-800 text-sm">1</span>
+                  <button onclick="adjustSplit(1)"  class="w-7 h-7 rounded-full bg-stone-200 hover:bg-stone-300 text-stone-600 flex items-center justify-center font-bold text-base leading-none transition-colors">+</button>
+                </div>
+              </div>
+              <div id="split-per-person" class="hidden flex justify-between items-center mt-2 px-0.5">
+                <span class="text-[11px] text-stone-400 font-semibold">ต่อคน :</span>
+                <span id="per-person-amount" class="text-sm font-extrabold font-eng text-sky-600">฿0</span>
+              </div>
+            </div>
+
+            <!-- Cash received -->
+            <div class="py-3 border-b border-stone-200">
+              <label class="text-xs font-bold text-stone-400 block mb-1.5">เงินสดที่รับมา (บาท)</label>
+              <input id="check-bill-cash-input" type="number" min="0" placeholder="เช่น 500" oninput="updateBillCalculation()" class="w-full bg-white border border-stone-200 rounded-xl px-4 py-2 text-sm font-bold font-eng text-stone-700 focus:outline-none focus:ring-2 focus:ring-sky-400 focus:border-transparent">
+              <div class="flex justify-between items-center mt-2 px-0.5">
+                <span class="text-xs font-semibold text-stone-500">เงินทอน :</span>
+                <span id="check-bill-change-amount" class="text-base font-extrabold font-eng text-stone-800">฿0</span>
+              </div>
+            </div>
+
+            <!-- Action buttons -->
+            <div class="flex gap-2.5 pt-3">
+              <button id="btn-confirm-check-bill-cancel" class="flex-1 bg-stone-100 hover:bg-stone-200 text-stone-600 font-bold py-3 rounded-xl text-xs transition-colors">ยกเลิก</button>
+              <button id="btn-confirm-check-bill-ok" class="flex-1 bg-red-500 hover:bg-red-600 text-white font-bold py-3 rounded-xl text-xs shadow-md shadow-red-100 transition-colors">ยืนยัน & บันทึก</button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════
+       TOAST
+  ══════════════════════════════════════════════════════════ -->
+  <div id="toast-notification" class="fixed bottom-6 left-6 z-50 bg-stone-900 text-white py-3 px-5 rounded-2xl shadow-xl border border-stone-800 flex items-center gap-3 transition-all duration-300 transform translate-y-24 opacity-0">
+    <div class="w-7 h-7 rounded-xl bg-green-500 flex items-center justify-center shrink-0">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+      </svg>
+    </div>
+    <div class="text-sm font-semibold" id="toast-text">เสร็จสิ้น</div>
+  </div>
+
+  <!-- Receipt (offscreen render target) -->
+  <div id="receipt-print-area"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
