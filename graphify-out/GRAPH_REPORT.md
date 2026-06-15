@@ -1,119 +1,112 @@
 # Graph Report - .  (2026-06-15)
 
 ## Corpus Check
-- Corpus is ~7,722 words - fits in a single context window. You may not need a graph.
+- 10 files · ~10,408 words
+- Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 81 nodes · 159 edges · 13 communities (11 shown, 2 thin omitted)
-- Extraction: 95% EXTRACTED · 5% INFERRED · 0% AMBIGUOUS · INFERRED: 8 edges (avg confidence: 0.86)
+- 164 nodes · 324 edges · 10 communities (9 shown, 1 thin omitted)
+- Extraction: 92% EXTRACTED · 8% INFERRED · 0% AMBIGUOUS · INFERRED: 26 edges (avg confidence: 0.89)
 - Token cost: 0 input · 0 output
 
 ## Community Hubs (Navigation)
-- [[_COMMUNITY_Sales Reports & History|Sales Reports & History]]
-- [[_COMMUNITY_PIN Auth & Role Guard|PIN Auth & Role Guard]]
-- [[_COMMUNITY_POS Order & Checkout|POS Order & Checkout]]
-- [[_COMMUNITY_Menu Management Admin|Menu Management Admin]]
-- [[_COMMUNITY_Table & Floor Map|Table & Floor Map]]
-- [[_COMMUNITY_Menu List & Stats UI|Menu List & Stats UI]]
-- [[_COMMUNITY_Bill Calculation & Discounts|Bill Calculation & Discounts]]
-- [[_COMMUNITY_Menu Persistence Layer|Menu Persistence Layer]]
-- [[_COMMUNITY_UI Panel Controls|UI Panel Controls]]
-- [[_COMMUNITY_Menu Form Submission|Menu Form Submission]]
-- [[_COMMUNITY_Page Navigation Links|Page Navigation Links]]
-- [[_COMMUNITY_Supabase Config (Unused)|Supabase Config (Unused)]]
+- [[_COMMUNITY_POS App Core (Old Path)|POS App Core (Old Path)]]
+- [[_COMMUNITY_POS App Logic|POS App Logic]]
+- [[_COMMUNITY_Admin & Menu CRUD|Admin & Menu CRUD]]
+- [[_COMMUNITY_Menu Management (Old Path)|Menu Management (Old Path)]]
+- [[_COMMUNITY_Sales Reports (Old Path)|Sales Reports (Old Path)]]
+- [[_COMMUNITY_Auth & Page Navigation|Auth & Page Navigation]]
+- [[_COMMUNITY_Sales Reporting|Sales Reporting]]
+- [[_COMMUNITY_PIN Login (Old Path)|PIN Login (Old Path)]]
 - [[_COMMUNITY_Project Documentation|Project Documentation]]
 
 ## God Nodes (most connected - your core abstractions)
-1. `submitForm()` - 8 edges
-2. `renderTableDetails()` - 7 edges
-3. `saveToStorage()` - 6 edges
-4. `updateBillCalculation()` - 6 edges
-5. `zn_auth sessionStorage Role Token (staff | admin)` - 6 edges
-6. `renderMenuList()` - 5 edges
-7. `toggleActive()` - 5 edges
-8. `deleteItem()` - 5 edges
-9. `showNotification()` - 5 edges
-10. `handleAddMenuItem()` - 5 edges
+1. `submitForm()` - 9 edges
+2. `submitForm()` - 8 edges
+3. `renderTableDetails()` - 7 edges
+4. `renderTableDetails()` - 7 edges
+5. `handleCheckBill()` - 7 edges
+6. `saveToStorage()` - 6 edges
+7. `updateBillCalculation()` - 6 edges
+8. `zn_auth sessionStorage Role Token (staff | admin)` - 6 edges
+9. `saveToStorage()` - 6 edges
+10. `renderMenuList()` - 6 edges
 
 ## Surprising Connections (you probably didn't know these)
-- `showNotification()` --semantically_similar_to--> `showNotification()`  [INFERRED] [semantically similar]
-  poszabnua/admin.js → poszabnua/app.js
-- `showNotification()` --semantically_similar_to--> `showToast()`  [INFERRED] [semantically similar]
-  poszabnua/app.js → poszabnua/report.js
-- `validatePin()` --references--> `index.html – POS Floor Map & Ordering UI`  [EXTRACTED]
-  poszabnua/login.js → poszabnua/index.html
+- `loadFromStorage()` --semantically_similar_to--> `loadBills()`  [INFERRED] [semantically similar]
+  admin.js → report.js
+- `renderStats()` --semantically_similar_to--> `renderStats()`  [INFERRED] [semantically similar]
+  admin.js → report.js
 - `defaultMenu` --semantically_similar_to--> `fallbackMenu`  [INFERRED] [semantically similar]
-  poszabnua/admin.js → poszabnua/app.js
-- `loadFromStorage()` --semantically_similar_to--> `loadMenu()`  [INFERRED] [semantically similar]
-  poszabnua/admin.js → poszabnua/app.js
+  admin.js → app.js
+- `filterMenuList()` --semantically_similar_to--> `filterMenuSearch()`  [INFERRED] [semantically similar]
+  admin.js → app.js
+- `Admin Page — Menu Management` --references--> `openAddForm()`  [EXTRACTED]
+  admin.html → admin.js
 
 ## Import Cycles
 - None detected.
 
 ## Hyperedges (group relationships)
-- **PIN Auth + sessionStorage Role Guard (login sets token; admin, app, report enforce it)** — poszabnua_login, poszabnua_concept_zn_auth, poszabnua_admin, poszabnua_app, poszabnua_report [EXTRACTED 1.00]
-- **Menu Data Pipeline (admin writes → zn_menu_items → app reads active items)** — poszabnua_admin_savetostorage, poszabnua_concept_menu_key, poszabnua_app_loadmenu [EXTRACTED 1.00]
-- **Sales Data Pipeline (app writes bills → zn_sales_log → report reads + today revenue)** — poszabnua_app_savebilltolog, poszabnua_concept_sales_key, poszabnua_report_loadbills, poszabnua_app_loadtodayrevenue [EXTRACTED 1.00]
+- **PIN Authentication Flow — login writes token, three pages gate on it** — login_validatepin, zn_auth_store, admin_html, index_html, report_html [INFERRED 0.95]
+- **Menu Data Pipeline — Admin writes to localStorage, POS reads and renders it** — admin_savetostorage, zn_menu_items_store, app_loadmenu, app_populatemenucatalog [INFERRED 0.95]
+- **Sales Billing Pipeline — checkout saves to log, report page reads it** — app_handlecheckbill, app_savebilltolog, zn_sales_log_store, report_loadbills [INFERRED 0.95]
 
-## Communities (13 total, 2 thin omitted)
+## Communities (10 total, 1 thin omitted)
 
-### Community 0 - "Sales Reports & History"
-Cohesion: 0.23
-Nodes (10): loadTodayRevenue(), zn_sales_log localStorage Key, allBills, clearSalesLog(), loadBills(), renderBillList(), renderEmpty(), renderStats() (+2 more)
+### Community 0 - "POS App Core (Old Path)"
+Cohesion: 0.13
+Nodes (24): adjustItemQty(), adjustSplit(), closeDetailsDrawer(), getFinalTotal(), getSubtotal(), handleAddMenuItem(), handleCheckBill(), handleCheckIn() (+16 more)
 
-### Community 1 - "PIN Auth & Role Guard"
+### Community 1 - "POS App Logic"
+Cohesion: 0.14
+Nodes (22): adjustItemQty(), adjustSplit(), closeDetailsDrawer(), getFinalTotal(), getSubtotal(), handleAddMenuItem(), handleCheckBill(), handleCheckIn() (+14 more)
+
+### Community 2 - "Admin & Menu CRUD"
+Cohesion: 0.13
+Nodes (26): allItems, closeForm(), defaultMenu, deleteItem(), filterMenuList(), hideFormError(), loadFromStorage(), nextId() (+18 more)
+
+### Community 3 - "Menu Management (Old Path)"
+Cohesion: 0.17
+Nodes (21): allItems, closeForm(), defaultMenu, deleteItem(), hideFormError(), loadFromStorage(), nextId(), openAddForm() (+13 more)
+
+### Community 4 - "Sales Reports (Old Path)"
+Cohesion: 0.18
+Nodes (13): admin.html – Menu Management UI, loadTodayRevenue(), zn_sales_log localStorage Key, index.html – POS Floor Map & Ordering UI, allBills, clearSalesLog(), report.html – Sales Report UI, loadBills() (+5 more)
+
+### Community 5 - "Auth & Page Navigation"
+Cohesion: 0.32
+Nodes (12): Admin Page — Menu Management, Index Page — POS Floor Map, backspacePin(), clearPin(), hideError(), Login Page — PIN Entry, pressPin(), showError() (+4 more)
+
+### Community 6 - "Sales Reporting"
+Cohesion: 0.24
+Nodes (9): loadTodayRevenue(), allBills, clearSalesLog(), loadBills(), renderBillList(), renderEmpty(), renderStats(), setFilter() (+1 more)
+
+### Community 7 - "PIN Login (Old Path)"
 Cohesion: 0.33
 Nodes (10): showAdminLink(), zn_auth sessionStorage Role Token (staff | admin), backspacePin(), clearPin(), hideError(), login.html – PIN Login UI, pressPin(), showError() (+2 more)
 
-### Community 2 - "POS Order & Checkout"
-Cohesion: 0.24
-Nodes (5): handleCheckBill(), menuCatalog, printReceipt(), saveBillToLog(), tables
-
-### Community 3 - "Menu Management Admin"
-Cohesion: 0.32
-Nodes (6): allItems, defaultMenu, hideFormError(), openAddForm(), openEditForm(), fallbackMenu
-
-### Community 4 - "Table & Floor Map"
-Cohesion: 0.38
-Nodes (7): adjustItemQty(), handleCheckIn(), handleTableSelect(), renderFloorMap(), renderOrderSummaryTable(), renderTableDetails(), updateStats()
-
-### Community 5 - "Menu List & Stats UI"
-Cohesion: 0.47
-Nodes (6): deleteItem(), renderEmptyState(), renderMenuList(), renderStats(), showNotification(), toggleActive()
-
-### Community 6 - "Bill Calculation & Discounts"
-Cohesion: 0.53
-Nodes (6): adjustSplit(), getFinalTotal(), getSubtotal(), setDiscountMode(), showCheckBillConfirm(), updateBillCalculation()
-
-### Community 7 - "Menu Persistence Layer"
-Cohesion: 0.60
-Nodes (5): loadFromStorage(), saveToStorage(), loadMenu(), populateMenuCatalog(), zn_menu_items localStorage Key
-
-### Community 8 - "UI Panel Controls"
-Cohesion: 0.40
-Nodes (5): closeDetailsDrawer(), handleAddMenuItem(), hideAddMenuPanel(), hideCheckBillConfirm(), showNotification()
-
-### Community 9 - "Menu Form Submission"
-Cohesion: 0.50
-Nodes (4): closeForm(), nextId(), showFormError(), submitForm()
-
-### Community 10 - "Page Navigation Links"
-Cohesion: 1.00
-Nodes (3): admin.html – Menu Management UI, index.html – POS Floor Map & Ordering UI, report.html – Sales Report UI
+## Ambiguous Edges - Review These
+- `zn_menu_items localStorage (Shared Menu Store)` → `Supabase Config Placeholder (Unused)`  [AMBIGUOUS]
+  config.js · relation: conceptually_related_to
 
 ## Knowledge Gaps
-- **5 isolated node(s):** `allItems`, `tables`, `menuCatalog`, `allBills`, `README – poszabnua project`
+- **10 isolated node(s):** `allItems`, `tables`, `menuCatalog`, `allBills`, `README – poszabnua project` (+5 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **2 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **1 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `zn_auth sessionStorage Role Token (staff | admin)` connect `PIN Auth & Role Guard` to `Sales Reports & History`, `POS Order & Checkout`, `Menu Management Admin`?**
-  _High betweenness centrality (0.118) - this node is a cross-community bridge._
-- **Why does `login.html – PIN Login UI` connect `PIN Auth & Role Guard` to `Sales Reports & History`, `POS Order & Checkout`, `Menu Management Admin`?**
-  _High betweenness centrality (0.090) - this node is a cross-community bridge._
-- **Why does `loadMenu()` connect `Menu Persistence Layer` to `POS Order & Checkout`?**
-  _High betweenness centrality (0.023) - this node is a cross-community bridge._
+- **What is the exact relationship between `zn_menu_items localStorage (Shared Menu Store)` and `Supabase Config Placeholder (Unused)`?**
+  _Edge tagged AMBIGUOUS (relation: conceptually_related_to) - confidence is low._
+- **Why does `showNotification()` connect `Admin & Menu CRUD` to `POS App Logic`?**
+  _High betweenness centrality (0.060) - this node is a cross-community bridge._
 - **What connects `allItems`, `tables`, `menuCatalog` to the rest of the system?**
-  _6 weakly-connected nodes found - possible documentation gaps or missing edges._
+  _11 weakly-connected nodes found - possible documentation gaps or missing edges._
+- **Should `POS App Core (Old Path)` be split into smaller, more focused modules?**
+  _Cohesion score 0.1310344827586207 - nodes in this community are weakly interconnected._
+- **Should `POS App Logic` be split into smaller, more focused modules?**
+  _Cohesion score 0.13793103448275862 - nodes in this community are weakly interconnected._
+- **Should `Admin & Menu CRUD` be split into smaller, more focused modules?**
+  _Cohesion score 0.1349206349206349 - nodes in this community are weakly interconnected._
