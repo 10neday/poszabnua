@@ -3,86 +3,442 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>แซ่บนัวกาฬสินธ์ุ — Table Management & POS</title>
+  <title>แซ่บนัวกาฬสินธ์ุ — POS</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <link rel="stylesheet" href="styles.css">
+  <style>
+    /* ── Clean redesign overrides (index only) ─────────────── */
+
+    body {
+      background: #F4F6F9;
+      background-image: none;
+    }
+
+    /* Header */
+    header {
+      background: #FFFFFF;
+      border-bottom: 1px solid #E9EDF2;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+      backdrop-filter: none;
+    }
+
+    /* Brand logo — indigo */
+    .brand-logo {
+      background: #4F46E5;
+      box-shadow: 0 4px 12px rgba(79,70,229,0.22);
+      border-radius: 10px;
+    }
+
+    /* Stat chips */
+    .header-stat-chip {
+      background: #F9FAFB;
+      border: 1px solid #E9EDF2;
+      border-radius: 10px;
+      padding: 10px 16px;
+    }
+    .header-stat-chip::before { display: none; }
+    .header-stat-chip:hover { transform: none; }
+    .header-stat-chip-red   { background: #FFF1F2; border-color: #FECDD3; }
+    .header-stat-chip-amber { background: #FFFBEB; border-color: #FDE68A; }
+    .header-stat-chip-violet { background: #EEF2FF; border-color: #C7D2FE; }
+
+    /* Section bar */
+    .section-title-bar {
+      background: #FFFFFF;
+      border: 1px solid #E9EDF2;
+      border-radius: 14px;
+      box-shadow: none;
+    }
+    .section-title-bar::before { display: none; }
+
+    /* Floor map container */
+    .floor-map-container {
+      background: #FFFFFF;
+      border: 1px solid #E9EDF2;
+      border-radius: 20px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+    }
+    .floor-map-container::before { display: none; }
+
+    /* Zone label underline */
+    .zone-label::after { background: #4F46E5; }
+
+    /* Floor divider */
+    .floor-divider { background: #E9EDF2; }
+
+    /* Inside zone */
+    .zone-inside {
+      background: #FFFBEB !important;
+      border: 1.5px solid #FDE68A !important;
+      border-radius: 14px;
+      box-shadow: none !important;
+    }
+    .zone-inside::before { display: none !important; }
+
+    /* Outside zone */
+    .zone-outside {
+      background: #F0FDF4 !important;
+      border: 1.5px solid #BBF7D0 !important;
+      border-radius: 14px;
+      box-shadow: none !important;
+    }
+    .zone-outside::before { display: none !important; }
+
+    /* Table cards — flat clean */
+    .table-card {
+      border-radius: 12px;
+      backdrop-filter: none !important;
+      transition: transform 0.15s ease, box-shadow 0.15s ease !important;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.07) !important;
+    }
+    .table-card::before { display: none !important; }
+    .table-card:hover {
+      transform: translateY(-5px) scale(1.04) !important;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.1) !important;
+    }
+    .table-card:active {
+      transform: translateY(-2px) scale(0.99) !important;
+    }
+
+    /* Available — white with green border */
+    .table-card.status-available {
+      background: #FFFFFF !important;
+      border: 1.5px solid #86EFAC !important;
+      color: #15803D !important;
+    }
+    .table-card.status-available:hover {
+      border-color: #4ADE80 !important;
+      box-shadow: 0 8px 20px rgba(21,128,61,0.1) !important;
+    }
+
+    /* Occupied — light rose */
+    .table-card.status-occupied {
+      background: #FFF1F2 !important;
+      border: 1.5px solid #FECDD3 !important;
+      color: #9F1239 !important;
+    }
+    .table-card.status-occupied::after {
+      top: 7px; right: 7px;
+      width: 7px; height: 7px;
+      background: #F43F5E;
+      box-shadow: 0 0 8px rgba(244,63,94,0.5);
+    }
+
+    /* Selected — indigo */
+    .table-card.state-selected {
+      background: #4F46E5 !important;
+      border-color: #6366F1 !important;
+      color: #FFFFFF !important;
+      transform: scale(1.1) !important;
+      box-shadow: 0 0 0 3px rgba(99,102,241,0.2), 0 8px 24px rgba(79,70,229,0.25) !important;
+      animation: none !important;
+    }
+    .table-card.state-selected::after { display: none !important; }
+
+    /* Dimmed */
+    .table-card.state-dimmed {
+      background: #F1F5F9 !important;
+      border-color: #E2E8F0 !important;
+      color: #CBD5E1 !important;
+      opacity: 0.4 !important;
+      box-shadow: none !important;
+    }
+    .table-card.state-dimmed::before,
+    .table-card.state-dimmed::after { display: none !important; }
+
+    /* Table number */
+    .table-num {
+      font-size: 1.4rem !important;
+      font-weight: 800 !important;
+      text-shadow: none !important;
+    }
+    .table-sub {
+      font-size: 9px !important;
+      opacity: 0.6 !important;
+    }
+
+    /* Drawer */
+    #details-drawer {
+      background: #FFFFFF !important;
+      box-shadow: -8px 0 32px rgba(0,0,0,0.08) !important;
+      border-left: 1px solid #E9EDF2 !important;
+      backdrop-filter: none !important;
+    }
+
+    .drawer-header {
+      background: #FFFFFF !important;
+      border-bottom: 1px solid #F1F5F9 !important;
+    }
+    .drawer-header::after { display: none !important; }
+
+    /* Close button */
+    .close-btn-premium {
+      background: #FFF1F2 !important;
+      color: #E11D48 !important;
+      border-color: #FECDD3 !important;
+      border-radius: 8px !important;
+    }
+    .close-btn-premium:hover {
+      background: #E11D48 !important;
+      color: #FFF !important;
+      border-color: #E11D48 !important;
+    }
+
+    /* Status badge */
+    .status-badge-available {
+      background: #DCFCE7;
+      color: #15803D;
+      border: 1px solid #BBF7D0;
+      box-shadow: none;
+    }
+    .status-badge-occupied {
+      background: #FFF1F2;
+      color: #BE123C;
+      border: 1px solid #FECDD3;
+      box-shadow: none;
+    }
+
+    /* Table info badges */
+    .table-info-badge {
+      background: #F1F5F9;
+      color: #64748B;
+    }
+
+    /* Buttons */
+    .btn-primary-premium {
+      background: #16A34A !important;
+      color: #FFFFFF !important;
+      border-radius: 12px !important;
+      box-shadow: 0 2px 8px rgba(22,163,74,0.2) !important;
+    }
+    .btn-primary-premium:hover {
+      background: #15803D !important;
+      box-shadow: 0 4px 12px rgba(22,163,74,0.28) !important;
+      transform: translateY(-1px) !important;
+    }
+
+    .btn-rose-premium {
+      background: #E11D48 !important;
+      box-shadow: 0 2px 8px rgba(225,29,72,0.18) !important;
+    }
+    .btn-rose-premium:hover {
+      background: #BE123C !important;
+      box-shadow: 0 4px 12px rgba(225,29,72,0.25) !important;
+    }
+
+    .btn-sky-premium {
+      background: #4F46E5 !important;
+      box-shadow: 0 2px 8px rgba(79,70,229,0.2) !important;
+      border-radius: 12px !important;
+    }
+    .btn-sky-premium:hover {
+      background: #4338CA !important;
+      box-shadow: 0 4px 12px rgba(79,70,229,0.28) !important;
+    }
+
+    .btn-green-premium {
+      background: #16A34A !important;
+      box-shadow: 0 2px 8px rgba(22,163,74,0.18) !important;
+    }
+    .btn-green-premium:hover {
+      background: #15803D !important;
+    }
+
+    .btn-red-premium {
+      background: #4F46E5 !important;
+      box-shadow: 0 2px 8px rgba(79,70,229,0.18) !important;
+    }
+    .btn-red-premium:hover {
+      background: #4338CA !important;
+    }
+    .btn-red-premium:disabled {
+      background: #E2E8F0 !important;
+      color: #94A3B8 !important;
+    }
+
+    /* Order summary */
+    .order-summary-card {
+      border: 1px solid #F1F5F9 !important;
+      border-radius: 14px !important;
+      box-shadow: none !important;
+    }
+    .order-summary-card::before { display: none !important; }
+
+    .order-table-header {
+      background: #F9FAFB !important;
+      border-bottom: 1px solid #F1F5F9 !important;
+    }
+
+    .total-bar-premium {
+      background: #F9FAFB !important;
+      border-top: 1px solid #F1F5F9 !important;
+    }
+    .total-bar-premium::before { display: none !important; }
+
+    /* Bill / checkout panel */
+    .bill-panel-premium {
+      background: #F9FAFB !important;
+      border: 1px solid #F1F5F9 !important;
+    }
+    .bill-panel-premium::before { display: none !important; }
+
+    .checkout-divider { background: #F1F5F9 !important; }
+
+    /* Inputs */
+    .form-input-premium {
+      background: #FFFFFF;
+      border: 1.5px solid #E2E8F0;
+      border-radius: 10px;
+    }
+    .form-input-premium:focus {
+      border-color: #4F46E5;
+      box-shadow: 0 0 0 3px rgba(79,70,229,0.08);
+      background: #FFFFFF;
+    }
+
+    .input-bill-premium {
+      background: #FFFFFF;
+      border: 1.5px solid #E2E8F0;
+      border-radius: 10px;
+    }
+    .input-bill-premium:focus {
+      border-color: #4F46E5;
+      box-shadow: 0 0 0 3px rgba(79,70,229,0.08);
+    }
+
+    /* Qty controls */
+    .qty-btn {
+      background: #F1F5F9;
+      border-color: #E2E8F0;
+      color: #475569;
+      border-radius: 7px;
+    }
+    .qty-btn:hover {
+      background: #4F46E5;
+      color: #FFF;
+      border-color: #4F46E5;
+    }
+
+    /* Search results */
+    .search-results-premium {
+      box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+      border-color: #E9EDF2;
+    }
+
+    /* Divider */
+    .divider-premium::before,
+    .divider-premium::after {
+      background: linear-gradient(90deg, transparent, #E9EDF2, transparent);
+    }
+
+    /* Nav buttons */
+    .nav-btn-premium { border-radius: 8px; }
+    .nav-btn-default {
+      background: #F4F6F9;
+      color: #475569;
+      border-color: #E2E8F0;
+    }
+    .nav-btn-default:hover { background: #E9EDF2; color: #1E293B; }
+    .nav-btn-orange {
+      background: #FFF7ED;
+      color: #C2410C;
+      border-color: #FED7AA;
+    }
+    .nav-btn-orange:hover { background: #FFEDD5; }
+    .nav-btn-red {
+      background: #F4F6F9;
+      color: #64748B;
+      border-color: #E2E8F0;
+    }
+    .nav-btn-red:hover { background: #FEE2E2; color: #DC2626; border-color: #FECACA; }
+
+    /* Toast */
+    #toast-notification {
+      background: #1E293B !important;
+      border: 1px solid #334155 !important;
+      border-radius: 14px !important;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.15) !important;
+      backdrop-filter: none !important;
+    }
+
+    /* Order row hover */
+    .order-row-item:hover { background: #F8FAFC; }
+  </style>
 </head>
 <body class="min-h-screen flex flex-col antialiased">
 
-  <!-- ══════════════════════════════════════════════════════════
+  <!-- ══════════════════════════════════════════════════
        HEADER
-  ══════════════════════════════════════════════════════════ -->
+  ══════════════════════════════════════════════════ -->
   <header class="sticky top-0 z-40">
     <div class="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between gap-6">
 
       <!-- Brand -->
-      <div class="flex items-center gap-3.5 shrink-0">
-        <div class="w-11 h-11 rounded-xl brand-logo flex items-center justify-center text-white font-extrabold text-base font-eng">ZN</div>
+      <div class="flex items-center gap-3 shrink-0">
+        <div class="w-10 h-10 rounded-xl brand-logo flex items-center justify-center text-white font-extrabold text-sm font-eng tracking-tight">ZN</div>
         <div>
-          <h1 class="text-base font-extrabold leading-tight tracking-tight" style="color: var(--navy-900);">แซ่บนัวกาฬสินธ์ุ</h1>
-          <p class="text-[10px] font-medium leading-none mt-0.5" style="color: var(--navy-400);">Table Management & POS</p>
+          <h1 class="text-sm font-extrabold leading-tight tracking-tight text-gray-900">แซ่บนัวกาฬสินธ์ุ</h1>
+          <p class="text-[10px] font-medium text-gray-400 mt-0.5">Table Management & POS</p>
         </div>
       </div>
 
       <!-- Stats -->
-      <div class="flex items-center gap-3">
+      <div class="flex items-center gap-2.5">
 
-        <!-- Occupied -->
         <div class="header-stat-chip header-stat-chip-red flex items-center gap-2.5">
-          <span class="flex h-3 w-3 relative shrink-0">
-            <span class="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75" style="background: var(--rose-400);"></span>
-            <span class="relative inline-flex rounded-full h-3 w-3" style="background: var(--rose-500);"></span>
+          <span class="flex h-2.5 w-2.5 relative shrink-0">
+            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-60"></span>
+            <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-rose-500"></span>
           </span>
           <div>
-            <div class="text-[9px] font-bold uppercase tracking-widest" style="color: var(--rose-400);">ไม่ว่าง</div>
-            <div id="stat-occupied" class="text-lg font-extrabold font-eng leading-none" style="color: #e11d48;">0</div>
+            <div class="text-[9px] font-bold uppercase tracking-widest text-rose-400">ไม่ว่าง</div>
+            <div id="stat-occupied" class="text-base font-extrabold font-eng leading-none text-rose-600">0</div>
           </div>
         </div>
 
-        <!-- Available -->
         <div class="header-stat-chip header-stat-chip-amber flex items-center gap-2.5">
-          <span class="h-3 w-3 rounded-full shrink-0" style="background: var(--gold-400);"></span>
+          <span class="h-2.5 w-2.5 rounded-full bg-amber-400 shrink-0"></span>
           <div>
-            <div class="text-[9px] font-bold uppercase tracking-widest" style="color: var(--gold-500);">ว่าง</div>
-            <div id="stat-available" class="text-lg font-extrabold font-eng leading-none" style="color: var(--gold-600);">0</div>
+            <div class="text-[9px] font-bold uppercase tracking-widest text-amber-500">ว่าง</div>
+            <div id="stat-available" class="text-base font-extrabold font-eng leading-none text-amber-600">0</div>
           </div>
         </div>
 
-        <!-- Sales -->
         <div class="header-stat-chip header-stat-chip-violet flex items-center gap-2.5">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0" style="color: var(--violet-400);" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-indigo-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
           <div>
-            <div class="text-[9px] font-bold uppercase tracking-widest" style="color: var(--violet-400);">ยอดวันนี้</div>
-            <div id="stat-sales" class="text-lg font-extrabold font-eng leading-none" style="color: var(--violet-700);">฿0</div>
+            <div class="text-[9px] font-bold uppercase tracking-widest text-indigo-400">ยอดวันนี้</div>
+            <div id="stat-sales" class="text-base font-extrabold font-eng leading-none text-indigo-700">฿0</div>
           </div>
         </div>
 
       </div>
 
       <!-- Clock + Nav -->
-      <div class="flex items-center gap-4 shrink-0">
+      <div class="flex items-center gap-3 shrink-0">
         <div class="text-right">
-          <div id="header-time" class="text-base font-bold font-eng leading-none" style="color: var(--navy-800);"></div>
-          <div id="header-date" class="text-[10px] font-medium mt-0.5" style="color: var(--navy-400);"></div>
+          <div id="header-time" class="text-sm font-bold font-eng leading-none text-gray-800"></div>
+          <div id="header-date" class="text-[10px] font-medium text-gray-400 mt-0.5"></div>
         </div>
+        <div class="w-px h-8 bg-gray-100"></div>
         <a id="report-link" href="report.html" class="nav-btn-premium nav-btn-default hidden">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
           </svg>
           รายงาน
         </a>
         <a id="admin-link" href="admin.html" class="nav-btn-premium nav-btn-orange hidden">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
             <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
           </svg>
           จัดการเมนู
         </a>
-        <button onclick="logout()" title="ออกจากระบบ" class="nav-btn-premium nav-btn-red">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <button onclick="logout()" class="nav-btn-premium nav-btn-red">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
           </svg>
           ออกจากระบบ
@@ -92,42 +448,46 @@
     </div>
   </header>
 
-  <!-- ══════════════════════════════════════════════════════════
+  <!-- ══════════════════════════════════════════════════
        MAIN
-  ══════════════════════════════════════════════════════════ -->
-  <main class="flex-grow max-w-7xl mx-auto w-full px-6 py-7 flex flex-col gap-5">
+  ══════════════════════════════════════════════════ -->
+  <main class="flex-grow max-w-7xl mx-auto w-full px-6 py-6 flex flex-col gap-4">
 
     <!-- Section bar -->
-    <div class="section-title-bar flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 px-5 py-4">
+    <div class="section-title-bar flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 px-5 py-3.5">
       <div>
-        <h2 class="text-base font-extrabold tracking-tight" style="color: var(--navy-900);">แผนผังร้านอาหาร</h2>
-        <p class="text-xs mt-0.5" style="color: var(--navy-400);">คลิกที่โต๊ะเพื่อเช็กอิน หรือจัดการออเดอร์</p>
+        <h2 class="text-sm font-bold text-gray-800 tracking-tight">แผนผังร้านอาหาร</h2>
+        <p class="text-xs text-gray-400 mt-0.5">คลิกที่โต๊ะเพื่อเช็กอิน หรือจัดการออเดอร์</p>
       </div>
-      <div class="flex items-center gap-5 text-xs font-semibold" style="color: var(--navy-500);">
+      <div class="flex items-center gap-5 text-xs font-medium text-gray-500">
         <div class="flex items-center gap-2">
-          <span class="w-4 h-4 rounded-md" style="background: var(--gold-200); border: 1.5px solid var(--gold-300);"></span>
-          ว่าง (Available)
+          <span class="w-3.5 h-3.5 rounded-md bg-white border-2 border-green-300"></span>
+          ว่าง
         </div>
         <div class="flex items-center gap-2">
-          <span class="w-4 h-4 rounded-md" style="background: var(--rose-100); border: 1.5px solid var(--rose-400);"></span>
-          ไม่ว่าง (Occupied)
+          <span class="w-3.5 h-3.5 rounded-md bg-rose-100 border-2 border-rose-300"></span>
+          ไม่ว่าง
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="w-3.5 h-3.5 rounded-md bg-indigo-500 border-2 border-indigo-400"></span>
+          เลือกอยู่
         </div>
       </div>
     </div>
 
     <!-- Floor Map -->
-    <div class="floor-map-container p-7 flex flex-col gap-7">
+    <div class="floor-map-container p-6 flex flex-col gap-6">
 
       <!-- Inside Zone -->
       <div class="grid grid-cols-12 items-center gap-5">
         <div class="col-span-12 md:col-span-2 flex items-center md:justify-end">
           <div class="text-right select-none zone-label">
-            <div class="text-3xl font-extrabold tracking-tight leading-none" style="color: var(--navy-800);">Inside</div>
-            <div class="text-[10px] font-bold uppercase tracking-wider mt-1" style="color: var(--navy-400);">ด้านใน</div>
+            <div class="text-2xl font-extrabold tracking-tight leading-none text-gray-700">Inside</div>
+            <div class="text-[10px] font-bold uppercase tracking-wider mt-1 text-gray-400">ด้านใน</div>
           </div>
         </div>
         <div class="col-span-12 md:col-span-10">
-          <div id="inside-zone-map" class="zone-inside w-full aspect-[2.6/1] min-h-[210px]"></div>
+          <div id="inside-zone-map" class="zone-inside w-full aspect-[2.6/1] min-h-[200px]"></div>
         </div>
       </div>
 
@@ -137,60 +497,57 @@
       <div class="grid grid-cols-12 items-center gap-5">
         <div class="col-span-12 md:col-span-2 flex items-center md:justify-end">
           <div class="text-right select-none zone-label">
-            <div class="text-3xl font-extrabold tracking-tight leading-none" style="color: var(--navy-800);">Outside</div>
-            <div class="text-[10px] font-bold uppercase tracking-wider mt-1" style="color: var(--navy-400);">ด้านนอก</div>
+            <div class="text-2xl font-extrabold tracking-tight leading-none text-gray-700">Outside</div>
+            <div class="text-[10px] font-bold uppercase tracking-wider mt-1 text-gray-400">ด้านนอก</div>
           </div>
         </div>
         <div class="col-span-12 md:col-span-10">
-          <div id="outside-zone-map" class="zone-outside w-full aspect-[2.6/1] min-h-[210px]"></div>
+          <div id="outside-zone-map" class="zone-outside w-full aspect-[2.6/1] min-h-[200px]"></div>
         </div>
       </div>
 
     </div>
   </main>
 
-  <!-- ══════════════════════════════════════════════════════════
+  <!-- ══════════════════════════════════════════════════
        SIDE DRAWER
-  ══════════════════════════════════════════════════════════ -->
-  <div id="details-drawer" class="fixed top-0 right-0 h-full w-full sm:w-[480px] z-50 transform translate-x-full transition-transform duration-300 ease-in-out flex flex-col">
+  ══════════════════════════════════════════════════ -->
+  <div id="details-drawer" class="fixed top-0 right-0 h-full w-full sm:w-[460px] z-50 transform translate-x-full transition-transform duration-300 ease-in-out flex flex-col">
 
     <!-- Drawer Header -->
-    <div class="drawer-header px-6 py-4 flex items-center justify-between gap-4">
+    <div class="drawer-header px-5 py-4 flex items-center justify-between gap-4">
 
-      <!-- Close -->
       <button id="btn-close-drawer" class="close-btn-premium" title="ปิด">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
           <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
         </svg>
       </button>
 
-      <!-- Table info -->
       <div class="text-center flex-grow">
-        <h4 id="drawer-table-num" class="text-lg font-extrabold leading-tight" style="color: var(--navy-900);">โต๊ะ 0</h4>
+        <h4 id="drawer-table-num" class="text-base font-extrabold text-gray-900">โต๊ะ 0</h4>
         <div class="flex items-center justify-center gap-2 mt-1">
           <span id="drawer-capacity" class="table-info-badge">ขนาด: 0 คน</span>
           <span id="drawer-table-zone" class="table-info-badge">โซน...</span>
         </div>
       </div>
 
-      <!-- Status badge -->
       <span id="drawer-status-badge" class="status-badge-premium status-badge-available">ว่าง</span>
 
     </div>
 
     <!-- Drawer Body -->
-    <div class="flex-grow overflow-y-auto p-6 flex flex-col justify-between">
+    <div class="flex-grow overflow-y-auto p-5 flex flex-col justify-between">
 
       <!-- VIEW: AVAILABLE -->
-      <div id="view-available" class="hidden flex flex-col justify-center items-center flex-grow gap-8 py-16">
+      <div id="view-available" class="hidden flex flex-col justify-center items-center flex-grow gap-8 py-14">
         <div class="text-center max-w-xs">
-          <div class="w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-5" style="background: linear-gradient(135deg, rgba(245,158,11,0.08) 0%, rgba(245,158,11,0.03) 100%); border: 1px solid rgba(245,158,11,0.15); box-shadow: 0 4px 16px rgba(245,158,11,0.08);">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10" style="color: var(--gold-500);" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+          <div class="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 bg-green-50 border border-green-100">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
               <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
             </svg>
           </div>
-          <h4 class="text-lg font-extrabold" style="color: var(--navy-800);">โต๊ะพร้อมใช้งาน</h4>
-          <p class="text-sm mt-2 leading-relaxed" style="color: var(--navy-400);">กดปุ่ม Check-In เพื่อเปิดโต๊ะ<br>และเริ่มต้นรับออเดอร์</p>
+          <h4 class="text-base font-bold text-gray-800">โต๊ะพร้อมใช้งาน</h4>
+          <p class="text-sm mt-1.5 leading-relaxed text-gray-400">กดปุ่ม Check-In เพื่อเปิดโต๊ะ<br>และเริ่มต้นรับออเดอร์</p>
         </div>
         <button id="btn-check-in" class="btn-primary-premium w-full max-w-xs flex items-center justify-center gap-2">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
@@ -201,9 +558,9 @@
       </div>
 
       <!-- VIEW: OCCUPIED -->
-      <div id="view-occupied" class="hidden flex flex-col flex-grow justify-between gap-5">
+      <div id="view-occupied" class="hidden flex flex-col flex-grow justify-between gap-4">
 
-        <div class="flex flex-col gap-5">
+        <div class="flex flex-col gap-4">
 
           <!-- Add Menu button -->
           <div class="flex justify-center">
@@ -217,14 +574,13 @@
 
           <!-- Add Menu Panel -->
           <div id="add-menu-panel" class="hidden bill-panel-premium p-4 flex flex-col gap-3 fade-in">
-            <h5 class="text-sm font-bold" style="color: var(--navy-700);">สั่งรายการอาหาร</h5>
+            <h5 class="text-sm font-bold text-gray-700">สั่งรายการอาหาร</h5>
 
-            <!-- Search -->
             <div>
-              <label class="block text-xs font-bold mb-1.5" style="color: var(--navy-400);">ค้นหาเมนู</label>
+              <label class="block text-xs font-semibold mb-1.5 text-gray-400">ค้นหาเมนู</label>
               <div class="relative">
                 <div class="absolute inset-y-0 left-3 flex items-center pointer-events-none">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" style="color: var(--navy-400);" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                   </svg>
                 </div>
@@ -234,138 +590,126 @@
               </div>
             </div>
 
-            <!-- Divider -->
-            <div class="divider-premium">
-              <span>หรือ</span>
-            </div>
+            <div class="divider-premium"><span>หรือ</span></div>
 
-            <!-- Dropdown -->
             <div>
-              <label class="block text-xs font-bold mb-1.5" style="color: var(--navy-400);">เลือกจากรายการ</label>
+              <label class="block text-xs font-semibold mb-1.5 text-gray-400">เลือกจากรายการ</label>
               <select id="menu-item-select" class="form-input-premium text-sm"></select>
             </div>
 
-            <!-- Selected item + qty -->
             <div class="grid grid-cols-3 gap-3 items-center">
               <div class="col-span-2">
-                <div id="selected-menu-display" class="hidden rounded-xl px-3 py-2 flex items-center justify-between gap-2" style="background: linear-gradient(135deg, rgba(245,158,11,0.06) 0%, rgba(245,158,11,0.02) 100%); border: 1px solid rgba(245,158,11,0.15);">
+                <div id="selected-menu-display" class="hidden rounded-xl px-3 py-2 flex items-center justify-between gap-2 bg-indigo-50 border border-indigo-100">
                   <div class="min-w-0">
-                    <div id="selected-menu-name" class="text-xs font-bold truncate" style="color: var(--navy-800);"></div>
-                    <div id="selected-menu-category" class="text-[10px] mt-0.5" style="color: var(--navy-400);"></div>
+                    <div id="selected-menu-name" class="text-xs font-bold truncate text-gray-800"></div>
+                    <div id="selected-menu-category" class="text-[10px] mt-0.5 text-gray-400"></div>
                   </div>
-                  <span id="selected-menu-price" class="text-sm font-extrabold shrink-0" style="color: var(--gold-600);">฿0</span>
+                  <span id="selected-menu-price" class="text-sm font-extrabold shrink-0 text-indigo-600">฿0</span>
                 </div>
-                <div id="selected-menu-empty" class="rounded-xl flex items-center justify-center text-xs h-[52px]" style="background: var(--navy-100); border: 1.5px dashed var(--navy-300); color: var(--navy-400);">
+                <div id="selected-menu-empty" class="rounded-xl flex items-center justify-center text-xs h-[52px] bg-gray-50 border border-dashed border-gray-200 text-gray-400">
                   ยังไม่ได้เลือกเมนู
                 </div>
               </div>
               <div>
-                <label class="block text-xs font-bold mb-1.5" style="color: var(--navy-400);">จำนวน</label>
+                <label class="block text-xs font-semibold mb-1.5 text-gray-400">จำนวน</label>
                 <input id="add-menu-qty" type="number" min="1" value="1" class="form-input-premium text-sm font-bold text-center">
               </div>
             </div>
 
             <div class="flex justify-end gap-2">
-              <button id="btn-cancel-add-menu" class="px-4 py-2 text-xs font-bold rounded-xl transition-colors" style="color: var(--navy-500); background: var(--navy-100);">ยกเลิก</button>
+              <button id="btn-cancel-add-menu" class="px-4 py-2 text-xs font-semibold rounded-lg bg-gray-100 text-gray-500 transition-colors hover:bg-gray-200">ยกเลิก</button>
               <button id="btn-confirm-add-menu" class="btn-green-premium px-5 py-2 text-xs rounded-xl">เพิ่มออเดอร์</button>
             </div>
           </div>
 
           <!-- Order Summary -->
           <div class="order-summary-card">
-            <div class="order-table-header px-4 py-3">
-              <h5 class="text-xs font-bold uppercase tracking-wider" style="color: var(--navy-500);">สรุปรายการสั่ง</h5>
+            <div class="order-table-header px-4 py-2.5">
+              <h5 class="text-xs font-bold uppercase tracking-wider text-gray-400">สรุปรายการสั่ง</h5>
             </div>
-            <div class="max-h-[280px] overflow-y-auto bg-white">
+            <div class="max-h-[260px] overflow-y-auto bg-white">
               <table class="w-full text-left text-sm border-collapse">
                 <thead>
-                  <tr class="order-table-header text-[10px] font-bold uppercase tracking-wider" style="color: var(--navy-400);">
-                    <th class="py-2.5 px-3 text-center w-10">#</th>
-                    <th class="py-2.5 px-3">เมนู</th>
-                    <th class="py-2.5 px-3 text-right w-16">ราคา</th>
-                    <th class="py-2.5 px-3 text-center w-24">จำนวน</th>
-                    <th class="py-2.5 px-3 text-right w-20">รวม</th>
+                  <tr class="order-table-header text-[10px] font-bold uppercase tracking-wider text-gray-400">
+                    <th class="py-2 px-3 text-center w-10">#</th>
+                    <th class="py-2 px-3">เมนู</th>
+                    <th class="py-2 px-3 text-right w-16">ราคา</th>
+                    <th class="py-2 px-3 text-center w-24">จำนวน</th>
+                    <th class="py-2 px-3 text-right w-20">รวม</th>
                   </tr>
                 </thead>
-                <tbody id="order-summary-body" class="font-medium" style="color: var(--navy-700);">
-                </tbody>
+                <tbody id="order-summary-body" class="font-medium text-gray-700"></tbody>
               </table>
             </div>
-            <div class="total-bar-premium px-4 py-3.5 flex justify-between items-center">
-              <span class="text-sm font-bold" style="color: var(--navy-600);">ยอดรวม :</span>
-              <span id="order-total-amount" class="text-2xl font-extrabold font-eng" style="color: var(--gold-600);">฿0</span>
+            <div class="total-bar-premium px-4 py-3 flex justify-between items-center">
+              <span class="text-sm font-semibold text-gray-500">ยอดรวม</span>
+              <span id="order-total-amount" class="text-xl font-extrabold font-eng text-indigo-600">฿0</span>
             </div>
           </div>
         </div>
 
         <!-- Checkout -->
-        <div class="pt-5 mt-auto">
-          <hr class="checkout-divider mb-5">
+        <div class="pt-4 mt-auto">
+          <hr class="checkout-divider mb-4">
           <button id="btn-check-bill" class="btn-sky-premium w-full flex items-center justify-center gap-2">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
               <path stroke-linecap="round" stroke-linejoin="round" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
             </svg>
-            เช็คบิล (Check-Bill)
+            เช็คบิล
           </button>
 
           <!-- Confirm Panel -->
           <div id="check-bill-confirm-panel" class="hidden bill-panel-premium p-4 flex flex-col gap-0 fade-in mt-4">
-            <h5 class="text-sm font-extrabold text-center mb-3" style="color: var(--navy-800);">ยืนยันการชำระเงิน</h5>
+            <h5 class="text-sm font-bold text-center mb-3 text-gray-800">ยืนยันการชำระเงิน</h5>
 
-            <!-- Subtotal row -->
-            <div class="flex justify-between items-center py-2.5" style="border-bottom: 1px solid rgba(0,0,0,0.04);">
-              <span class="text-xs font-semibold" style="color: var(--navy-500);">ยอดอาหาร</span>
-              <span id="bill-subtotal" class="text-sm font-bold font-eng" style="color: var(--navy-700);">฿0</span>
+            <div class="flex justify-between items-center py-2.5 border-b border-gray-100">
+              <span class="text-xs font-medium text-gray-500">ยอดอาหาร</span>
+              <span id="bill-subtotal" class="text-sm font-bold font-eng text-gray-700">฿0</span>
             </div>
 
-            <!-- Discount -->
-            <div class="py-3" style="border-bottom: 1px solid rgba(0,0,0,0.04);">
-              <div class="flex items-center justify-between mb-2.5">
-                <span class="text-xs font-semibold" style="color: var(--navy-500);">ส่วนลด</span>
-                <div class="flex items-center gap-0.5 rounded-lg p-0.5" style="background: var(--navy-200);">
-                  <button id="discount-mode-amount" onclick="setDiscountMode('amount')" class="discount-tab px-2.5 py-1 text-[11px] font-bold rounded-md transition-all" style="background: white; color: var(--navy-800); box-shadow: var(--shadow-xs);">฿ บาท</button>
-                  <button id="discount-mode-percent" onclick="setDiscountMode('percent')" class="discount-tab px-2.5 py-1 text-[11px] font-bold rounded-md transition-all" style="color: var(--navy-400);">% เปอร์เซ็นต์</button>
+            <div class="py-2.5 border-b border-gray-100">
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-xs font-medium text-gray-500">ส่วนลด</span>
+                <div class="flex items-center gap-0.5 rounded-lg p-0.5 bg-gray-100">
+                  <button id="discount-mode-amount" onclick="setDiscountMode('amount')" class="discount-tab px-2.5 py-1 text-[11px] font-bold rounded-md transition-all bg-white text-gray-800 shadow-sm">฿ บาท</button>
+                  <button id="discount-mode-percent" onclick="setDiscountMode('percent')" class="discount-tab px-2.5 py-1 text-[11px] font-bold rounded-md transition-all text-gray-400">% เปอร์เซ็นต์</button>
                 </div>
               </div>
               <input id="discount-input" type="number" min="0" value="0" placeholder="0" oninput="updateBillCalculation()" class="form-input-premium text-sm font-bold font-eng text-center">
             </div>
 
-            <!-- Final total -->
-            <div class="flex justify-between items-center py-2.5" style="border-bottom: 1px solid rgba(0,0,0,0.04);">
-              <span class="text-xs font-bold" style="color: var(--navy-600);">ยอดสุทธิ</span>
-              <span id="bill-final-total" class="text-lg font-extrabold font-eng" style="color: var(--gold-600);">฿0</span>
+            <div class="flex justify-between items-center py-2.5 border-b border-gray-100">
+              <span class="text-xs font-bold text-gray-600">ยอดสุทธิ</span>
+              <span id="bill-final-total" class="text-lg font-extrabold font-eng text-indigo-600">฿0</span>
             </div>
 
-            <!-- Split bill -->
-            <div class="py-3" style="border-bottom: 1px solid rgba(0,0,0,0.04);">
+            <div class="py-2.5 border-b border-gray-100">
               <div class="flex items-center justify-between">
-                <span class="text-xs font-semibold" style="color: var(--navy-500);">แบ่งจ่าย (จำนวนคน)</span>
+                <span class="text-xs font-medium text-gray-500">แบ่งจ่าย (จำนวนคน)</span>
                 <div class="flex items-center gap-2">
                   <button onclick="adjustSplit(-1)" class="qty-btn">−</button>
                   <span id="split-count" class="qty-value">1</span>
                   <button onclick="adjustSplit(1)" class="qty-btn">+</button>
                 </div>
               </div>
-              <div id="split-per-person" class="hidden flex justify-between items-center mt-2 px-0.5">
-                <span class="text-[11px] font-semibold" style="color: var(--navy-400);">ต่อคน :</span>
-                <span id="per-person-amount" class="text-sm font-extrabold font-eng" style="color: var(--sky-500);">฿0</span>
+              <div id="split-per-person" class="hidden flex justify-between items-center mt-2">
+                <span class="text-[11px] font-medium text-gray-400">ต่อคน :</span>
+                <span id="per-person-amount" class="text-sm font-extrabold font-eng text-indigo-500">฿0</span>
               </div>
             </div>
 
-            <!-- Cash received -->
-            <div class="py-3" style="border-bottom: 1px solid rgba(0,0,0,0.04);">
-              <label class="text-xs font-bold block mb-1.5" style="color: var(--navy-400);">เงินสดที่รับมา (บาท)</label>
+            <div class="py-2.5 border-b border-gray-100">
+              <label class="text-xs font-semibold block mb-1.5 text-gray-400">เงินสดที่รับมา (บาท)</label>
               <input id="check-bill-cash-input" type="number" min="0" placeholder="เช่น 500" oninput="updateBillCalculation()" class="input-bill-premium">
-              <div class="flex justify-between items-center mt-2 px-0.5">
-                <span class="text-xs font-semibold" style="color: var(--navy-500);">เงินทอน :</span>
-                <span id="check-bill-change-amount" class="text-base font-extrabold font-eng" style="color: var(--navy-800);">฿0</span>
+              <div class="flex justify-between items-center mt-2">
+                <span class="text-xs font-medium text-gray-400">เงินทอน :</span>
+                <span id="check-bill-change-amount" class="text-base font-extrabold font-eng text-gray-800">฿0</span>
               </div>
             </div>
 
-            <!-- Action buttons -->
-            <div class="flex gap-2.5 pt-3">
-              <button id="btn-confirm-check-bill-cancel" class="flex-1 font-bold py-3 rounded-xl text-xs transition-colors" style="background: var(--navy-100); color: var(--navy-600);">ยกเลิก</button>
-              <button id="btn-confirm-check-bill-ok" class="btn-red-premium flex-1 py-3 rounded-xl text-xs">ยืนยัน &amp; บันทึก</button>
+            <div class="flex gap-2 pt-3">
+              <button id="btn-confirm-check-bill-cancel" class="flex-1 font-semibold py-2.5 rounded-xl text-xs bg-gray-100 text-gray-500 hover:bg-gray-200 transition-colors">ยกเลิก</button>
+              <button id="btn-confirm-check-bill-ok" class="btn-red-premium flex-1 py-2.5 rounded-xl text-xs">ยืนยัน &amp; บันทึก</button>
             </div>
           </div>
         </div>
@@ -374,21 +718,19 @@
     </div>
   </div>
 
-  <!-- ══════════════════════════════════════════════════════════
+  <!-- ══════════════════════════════════════════════════
        TOAST
-  ══════════════════════════════════════════════════════════ -->
-  <div id="toast-notification" class="fixed bottom-6 left-6 z-50 py-3 px-5 flex items-center gap-3 transition-all duration-300 transform translate-y-24 opacity-0">
+  ══════════════════════════════════════════════════ -->
+  <div id="toast-notification" class="fixed bottom-6 left-6 z-50 py-3 px-4 flex items-center gap-3 transition-all duration-300 transform translate-y-24 opacity-0">
     <div class="toast-icon-premium">
       <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
         <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
       </svg>
     </div>
-    <div class="text-sm font-semibold" id="toast-text" style="color: white;">เสร็จสิ้น</div>
+    <span class="text-sm font-semibold text-white" id="toast-text">เสร็จสิ้น</span>
   </div>
 
-  <!-- Receipt (offscreen render target) -->
   <div id="receipt-print-area"></div>
-
   <script src="app.js"></script>
 </body>
 </html>

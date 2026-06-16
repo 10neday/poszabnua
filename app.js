@@ -80,7 +80,7 @@ async function loadMenu() {
   try {
     const res  = await fetch('/api/menu');
     const all  = await res.json();
-    menuCatalog = all.filter(item => item.is_active);
+    menuCatalog = all.filter(item => item.is_active !== false);
   } catch {
     menuCatalog = [];
   }
