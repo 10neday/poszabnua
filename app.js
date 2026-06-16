@@ -8,10 +8,6 @@ function logout() {
   window.location.href = 'login.html';
 }
 
-// ── localStorage keys ─────────────────────────────────────────
-const MENU_KEY  = 'zn_menu_items';
-const SALES_KEY = 'zn_sales_log';
-
 // ── Live clock ────────────────────────────────────────────────
 function updateClock() {
   const now = new Date();
@@ -40,34 +36,16 @@ let tables = [
   { id: 15, zone: 'Outside', capacity: '3-6 คน', status: 'available', orders: [], position: { left: '10%', top: '52%', width: '15%', height: '40%' } },
 ];
 
-// Fallback menu (used when localStorage has no data yet)
-const fallbackMenu = [
-  { name: 'ตำปลาร้า',          price: 30,  category: 'เมนูตำ',              is_active: true },
-  { name: 'ตำปู',               price: 30,  category: 'เมนูตำ',              is_active: true },
-  { name: 'ตำไทย',              price: 30,  category: 'เมนูตำ',              is_active: true },
-  { name: 'ตำกุ้งสด',           price: 60,  category: 'เมนูตำ',              is_active: true },
-  { name: 'ตำทะเล',             price: 80,  category: 'เมนูตำ',              is_active: true },
-  { name: 'ลาบหมู',             price: 60,  category: 'เมนูลาบ-ก้อย',        is_active: true },
-  { name: 'ลาบไก่',             price: 60,  category: 'เมนูลาบ-ก้อย',        is_active: true },
-  { name: 'คอหมูย่าง',          price: 80,  category: 'เมนูย่าง-ทอด-อบ',      is_active: true },
-  { name: 'กะเพราหมู',          price: 40,  category: 'เมนูอาหารจานเดียว',    is_active: true },
-  { name: 'ข้าวเหนียว',         price: 10,  category: 'เมนูข้าว/เครื่องเคียง', is_active: true },
-  { name: 'โค้ก(เล็ก)',         price: 20,  category: 'เครื่องดื่ม',          is_active: true },
-  { name: 'น้ำเปล่า(เล็ก)',     price: 10,  category: 'เครื่องดื่ม',          is_active: true },
-];
-
-let menuCatalog      = [];
-let activeTableId    = null;
-let totalRevenue     = 0;
+let menuCatalog       = [];
+let activeTableId     = null;
+let totalRevenue      = 0;
 let selectedMenuIndex = null;
 
-function loadTodayRevenue() {
+async function loadTodayRevenue() {
   try {
-    const log   = JSON.parse(localStorage.getItem(SALES_KEY) || '[]');
-    const today = new Date().toDateString();
-    return log
-      .filter(b => new Date(b.timestamp).toDateString() === today)
-      .reduce((sum, b) => sum + b.finalTotal, 0);
+    const res  = await fetch('/api/sales?today=true');
+    const bills = await res.json();
+    return bills.reduce((sum, b) => sum + b.finalTotal, 0);
   } catch { return 0; }
 }
 
@@ -76,15 +54,15 @@ let discountMode = 'amount'; // 'amount' | 'percent'
 let splitCount   = 1;
 
 // ── Boot ──────────────────────────────────────────────────────
-window.addEventListener('DOMContentLoaded', () => {
+window.addEventListener('DOMContentLoaded', async () => {
   updateClock();
   setInterval(updateClock, 1000);
   showAdminLink();
   renderFloorMap();
-  totalRevenue = loadTodayRevenue();
+  totalRevenue = await loadTodayRevenue();
   updateStats();
   setupEventListeners();
-  loadMenu();
+  await loadMenu();
 });
 
 // ── Admin link ────────────────────────────────────────────────
@@ -97,18 +75,14 @@ function showAdminLink() {
   }
 }
 
-// ── Menu loading (localStorage) ───────────────────────────────
-function loadMenu() {
-  const stored = localStorage.getItem(MENU_KEY);
-  if (stored) {
-    try {
-      const all = JSON.parse(stored);
-      menuCatalog = all.filter(item => item.is_active);
-    } catch {
-      menuCatalog = [...fallbackMenu];
-    }
-  } else {
-    menuCatalog = [...fallbackMenu];
+// ── Menu loading ──────────────────────────────────────────────
+async function loadMenu() {
+  try {
+    const res  = await fetch('/api/menu');
+    const all  = await res.json();
+    menuCatalog = all.filter(item => item.is_active);
+  } catch {
+    menuCatalog = [];
   }
   populateMenuCatalog();
 }
@@ -229,19 +203,19 @@ function renderOrderSummaryTable(table) {
       const amount = item.price * item.qty;
       total += amount;
       const row = document.createElement('tr');
-      row.className = 'hover:bg-stone-50 transition-colors';
+      row.className = 'order-row-item';
       row.innerHTML = `
-        <td class="py-3 px-3 text-center text-stone-400 font-eng text-xs">${idx + 1}</td>
-        <td class="py-3 px-3 font-medium text-stone-800 text-sm">${item.menu}</td>
-        <td class="py-3 px-3 text-right font-eng text-sm text-stone-500">฿${item.price}</td>
+        <td class="py-3 px-3 text-center font-eng text-xs" style="color: var(--navy-400);">${idx + 1}</td>
+        <td class="py-3 px-3 font-medium text-sm" style="color: var(--navy-800);">${item.menu}</td>
+        <td class="py-3 px-3 text-right font-eng text-sm" style="color: var(--navy-500);">฿${item.price}</td>
         <td class="py-3 px-3 text-center">
           <div class="inline-flex items-center gap-2">
-            <button onclick="adjustItemQty(${table.id}, ${idx}, -1)" class="w-6 h-6 rounded-full bg-stone-100 hover:bg-stone-200 text-stone-600 flex items-center justify-center font-bold text-sm transition-colors leading-none">−</button>
-            <span class="w-6 text-center font-bold font-eng text-stone-800 text-sm">${item.qty}</span>
-            <button onclick="adjustItemQty(${table.id}, ${idx},  1)" class="w-6 h-6 rounded-full bg-stone-100 hover:bg-stone-200 text-stone-600 flex items-center justify-center font-bold text-sm transition-colors leading-none">+</button>
+            <button onclick="adjustItemQty(${table.id}, ${idx}, -1)" class="qty-btn w-6 h-6 flex items-center justify-center font-bold text-sm leading-none">−</button>
+            <span class="w-6 text-center font-bold font-eng text-sm" style="color: var(--navy-800);">${item.qty}</span>
+            <button onclick="adjustItemQty(${table.id}, ${idx},  1)" class="qty-btn w-6 h-6 flex items-center justify-center font-bold text-sm leading-none">+</button>
           </div>
         </td>
-        <td class="py-3 px-3 text-right font-bold font-eng text-stone-800 text-sm">฿${amount.toLocaleString()}</td>`;
+        <td class="py-3 px-3 text-right font-bold font-eng text-sm" style="color: var(--navy-800);">฿${amount.toLocaleString()}</td>`;
       tbody.appendChild(row);
     });
   }
@@ -266,7 +240,6 @@ function populateMenuCatalog() {
   if (!dropdown) return;
   dropdown.innerHTML = '';
 
-  // Placeholder
   const placeholder = document.createElement('option');
   placeholder.value    = '';
   placeholder.disabled = true;
@@ -274,7 +247,6 @@ function populateMenuCatalog() {
   placeholder.innerText = '— เลือกหมวดหมู่ / เมนู —';
   dropdown.appendChild(placeholder);
 
-  // Group by category using <optgroup>
   const groups = {};
   menuCatalog.forEach((item, index) => {
     const cat = item.category || 'อื่นๆ';
@@ -328,16 +300,17 @@ function filterMenuSearch(query) {
     .slice(0, 20);
 
   if (matches.length === 0) {
-    resultsEl.innerHTML = `<div class="px-4 py-3 text-xs text-stone-400 text-center">ไม่พบเมนู "${query}"</div>`;
+    resultsEl.innerHTML = `<div class="px-4 py-3 text-xs text-center" style="color: var(--navy-400);">ไม่พบเมนู "${query}"</div>`;
   } else {
     resultsEl.innerHTML = matches.map(item => `
       <div onclick="selectMenuItem(${item.index})"
-        class="px-3 py-2.5 cursor-pointer hover:bg-orange-50 flex items-center justify-between gap-2 transition-colors">
+        class="px-3 py-2.5 cursor-pointer hover:bg-amber-50 flex items-center justify-between gap-2 transition-colors"
+        style="border-bottom: 1px solid var(--navy-100);">
         <div class="min-w-0">
-          <div class="text-sm font-semibold text-stone-800 truncate">${item.name}</div>
-          <div class="text-[10px] text-stone-400 mt-0.5">${item.category || ''}</div>
+          <div class="text-sm font-semibold truncate" style="color: var(--navy-800);">${item.name}</div>
+          <div class="text-[10px] mt-0.5" style="color: var(--navy-400);">${item.category || ''}</div>
         </div>
-        <span class="text-sm font-bold text-orange-500 shrink-0">฿${item.price}</span>
+        <span class="text-sm font-bold font-eng shrink-0" style="color: var(--gold-600);">฿${item.price}</span>
       </div>`).join('');
   }
   resultsEl.classList.remove('hidden');
@@ -436,11 +409,10 @@ function updateBillCalculation() {
   const finalTotal = getFinalTotal();
   const cash       = parseFloat(document.getElementById('check-bill-cash-input')?.value) || 0;
 
-  // Update displays
-  const subtotalEl = document.getElementById('bill-subtotal');
-  const finalEl    = document.getElementById('bill-final-total');
-  const changeEl   = document.getElementById('check-bill-change-amount');
-  const confirmBtn = document.getElementById('btn-confirm-check-bill-ok');
+  const subtotalEl  = document.getElementById('bill-subtotal');
+  const finalEl     = document.getElementById('bill-final-total');
+  const changeEl    = document.getElementById('check-bill-change-amount');
+  const confirmBtn  = document.getElementById('btn-confirm-check-bill-ok');
   const perPersonEl = document.getElementById('per-person-amount');
 
   if (subtotalEl) subtotalEl.innerText = `฿${subtotal.toLocaleString()}`;
@@ -473,21 +445,17 @@ function showCheckBillConfirm() {
     return;
   }
 
-  // Reset state
   splitCount = 1;
   discountMode = 'amount';
   document.getElementById('split-count').innerText = 1;
   document.getElementById('split-per-person').classList.add('hidden');
   document.getElementById('discount-input').value = 0;
 
-  // Set discount mode UI
   setDiscountMode('amount');
 
-  // Set default cash = final total
   const finalTotal = getFinalTotal();
   document.getElementById('check-bill-cash-input').value = finalTotal;
 
-  // Calculate
   updateBillCalculation();
 
   document.getElementById('btn-check-bill').classList.add('hidden');
@@ -501,13 +469,13 @@ function hideCheckBillConfirm() {
   if (btn)   btn.classList.remove('hidden');
 }
 
-// ── Save bill to log ──────────────────────────────────────────
-function saveBillToLog(table, finalTotal, cash, change) {
+// ── Save bill to DB ───────────────────────────────────────────
+async function saveBillToLog(table, finalTotal, cash, change) {
   const subtotal = table.orders.reduce((s, i) => s + i.price * i.qty, 0);
-  try {
-    const log = JSON.parse(localStorage.getItem(SALES_KEY) || '[]');
-    log.push({
-      id:         Date.now(),
+  await fetch('/api/sales', {
+    method:  'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
       tableId:    table.id,
       zone:       table.zone,
       items:      table.orders.map(o => ({ menu: o.menu, price: o.price, qty: o.qty })),
@@ -517,10 +485,8 @@ function saveBillToLog(table, finalTotal, cash, change) {
       cash,
       change,
       splitCount,
-      timestamp:  new Date().toISOString()
-    });
-    localStorage.setItem(SALES_KEY, JSON.stringify(log));
-  } catch {}
+    }),
+  });
 }
 
 // ── Receipt ───────────────────────────────────────────────────
@@ -618,7 +584,7 @@ function printReceipt(table, cash, change, finalTotal) {
     </div>`;
 }
 
-function handleCheckBill() {
+async function handleCheckBill() {
   if (activeTableId === null) return;
   const table = tables.find(t => t.id === activeTableId);
   if (!table || table.status !== 'occupied') return;
@@ -627,7 +593,7 @@ function handleCheckBill() {
   const cash       = parseFloat(document.getElementById('check-bill-cash-input').value) || finalTotal;
   const change     = Math.max(0, cash - finalTotal);
 
-  saveBillToLog(table, finalTotal, cash, change);
+  await saveBillToLog(table, finalTotal, cash, change);
   printReceipt(table, cash, change, finalTotal);
 
   html2canvas(document.getElementById('receipt-print-area'), {
@@ -680,18 +646,15 @@ function setupEventListeners() {
   document.getElementById('btn-confirm-check-bill-ok').addEventListener('click', handleCheckBill);
   window.addEventListener('keydown', e => { if (e.key === 'Escape') closeDetailsDrawer(); });
 
-  const menuSearchInput = document.getElementById('menu-search-input');
+  const menuSearchInput   = document.getElementById('menu-search-input');
   const menuSearchResults = document.getElementById('menu-search-results');
   if (menuSearchInput) {
     menuSearchInput.addEventListener('input', () => filterMenuSearch(menuSearchInput.value));
     menuSearchInput.addEventListener('blur', () => {
       setTimeout(() => document.getElementById('menu-search-results')?.classList.add('hidden'), 200);
     });
-    // Prevent blur when clicking on search results
     if (menuSearchResults) {
-      menuSearchResults.addEventListener('mousedown', (e) => {
-        e.preventDefault();
-      });
+      menuSearchResults.addEventListener('mousedown', (e) => { e.preventDefault(); });
     }
   }
 

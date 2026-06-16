@@ -3,14 +3,12 @@ if (sessionStorage.getItem('zn_auth') !== 'admin') {
   window.location.href = 'login.html';
 }
 
-const SALES_KEY = 'zn_sales_log';
-
 let allBills = [];
 let viewMode = 'today'; // 'today' | 'all'
 
 // ── Boot ──────────────────────────────────────────────────────
-window.addEventListener('DOMContentLoaded', () => {
-  loadBills();
+window.addEventListener('DOMContentLoaded', async () => {
+  await loadBills();
   renderStats();
   setFilter('today');
   document.getElementById('filter-today').addEventListener('click', () => setFilter('today'));
@@ -18,13 +16,13 @@ window.addEventListener('DOMContentLoaded', () => {
 });
 
 // ── Load ──────────────────────────────────────────────────────
-function loadBills() {
+async function loadBills() {
   try {
-    allBills = JSON.parse(localStorage.getItem(SALES_KEY) || '[]');
+    const res = await fetch('/api/sales');
+    allBills  = await res.json();
   } catch {
     allBills = [];
   }
-  allBills.sort((a, b) => b.id - a.id);
 }
 
 // ── Stats ─────────────────────────────────────────────────────
@@ -73,7 +71,6 @@ function renderBillList() {
     return;
   }
 
-  // Group by calendar date
   const groups = {};
   bills.forEach(b => {
     const key = new Date(b.timestamp).toLocaleDateString('th-TH', {
@@ -108,10 +105,10 @@ function renderBillList() {
 }
 
 function renderBillRow(bill) {
-  const time       = new Date(bill.timestamp).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
-  const itemCount  = bill.items.reduce((s, i) => s + i.qty, 0);
-  const hasDisc    = bill.discount > 0;
-  const hasSplit   = bill.splitCount > 1;
+  const time      = new Date(bill.timestamp).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
+  const itemCount = bill.items.reduce((s, i) => s + i.qty, 0);
+  const hasDisc   = bill.discount > 0;
+  const hasSplit  = bill.splitCount > 1;
 
   const itemsHTML = bill.items.map(item => `
     <tr class="border-b border-stone-100 last:border-0">
@@ -122,8 +119,8 @@ function renderBillRow(bill) {
 
   const detailLine = [
     `ยอดอาหาร ฿${bill.subtotal.toLocaleString()}`,
-    hasDisc  ? `ส่วนลด ฿${bill.discount.toLocaleString()}`          : null,
-    hasSplit ? `แบ่งจ่าย ${bill.splitCount} คน`                     : null,
+    hasDisc  ? `ส่วนลด ฿${bill.discount.toLocaleString()}`     : null,
+    hasSplit ? `แบ่งจ่าย ${bill.splitCount} คน`               : null,
     `รับเงิน ฿${bill.cash.toLocaleString()}`,
     `ทอน ฿${bill.change.toLocaleString()}`
   ].filter(Boolean).join(' · ');
@@ -177,9 +174,9 @@ function renderEmpty(msg) {
 }
 
 // ── Clear log ─────────────────────────────────────────────────
-function clearSalesLog() {
+async function clearSalesLog() {
   if (!confirm('ลบประวัติการขายทั้งหมด?\nการกระทำนี้ไม่สามารถย้อนกลับได้')) return;
-  localStorage.removeItem(SALES_KEY);
+  await fetch('/api/sales', { method: 'DELETE' });
   allBills = [];
   renderStats();
   renderBillList();

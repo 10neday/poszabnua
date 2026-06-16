@@ -3,12 +3,7 @@ if (sessionStorage.getItem('zn_auth') !== 'admin') {
   window.location.href = 'login.html';
 }
 
-// ── localStorage keys ─────────────────────────────────────────
-const MENU_KEY         = 'zn_menu_items';
-const MENU_VERSION_KEY = 'zn_menu_version';
-const MENU_VERSION     = 2; // bump to force re-seed from defaultMenu
-
-// ── Default menu (seeded from Menu Master.csv) ────────────────
+// ── Default menu (seeded to DB on first run) ──────────────────
 const defaultMenu = [
   { id: 1,   name: 'ตำปลาร้า',                              price: 30,  category: 'เมนูตำ',               is_active: true },
   { id: 2,   name: 'ตำหอยดอง',                              price: 30,  category: 'เมนูตำ',               is_active: true },
@@ -191,40 +186,35 @@ const defaultMenu = [
   { id: 179, name: 'ยำไข่เยี่ยวม้า',                        price: 80,  category: 'เมนูแนะนำ',              is_active: true },
 ];
 
-let allItems   = [];
+let allItems    = [];
 let searchQuery = '';
 
-// ── localStorage helpers ──────────────────────────────────────
-function loadFromStorage() {
-  const stored  = localStorage.getItem(MENU_KEY);
-  const version = parseInt(localStorage.getItem(MENU_VERSION_KEY) || '0');
-
-  if (stored && version === MENU_VERSION) {
-    try {
-      allItems = JSON.parse(stored);
-    } catch {
-      allItems = defaultMenu.map(i => ({ ...i }));
-      saveToStorage();
+// ── Load from DB ──────────────────────────────────────────────
+async function loadFromDb() {
+  try {
+    const res = await fetch('/api/menu');
+    allItems  = await res.json();
+    if (allItems.length === 0) {
+      await seedDefaultMenu();
     }
-  } else {
-    // First run or version mismatch — replace with new menu
-    allItems = defaultMenu.map(i => ({ ...i }));
-    saveToStorage();
-    localStorage.setItem(MENU_VERSION_KEY, MENU_VERSION);
+  } catch {
+    allItems = [];
   }
 }
 
-function saveToStorage() {
-  localStorage.setItem(MENU_KEY, JSON.stringify(allItems));
-}
-
-function nextId() {
-  return allItems.length > 0 ? Math.max(...allItems.map(i => i.id)) + 1 : 1;
+async function seedDefaultMenu() {
+  await fetch('/api/menu/seed', {
+    method:  'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body:    JSON.stringify({ items: defaultMenu }),
+  });
+  const res = await fetch('/api/menu');
+  allItems  = await res.json();
 }
 
 // ── Boot ──────────────────────────────────────────────────────
-window.addEventListener('DOMContentLoaded', () => {
-  loadFromStorage();
+window.addEventListener('DOMContentLoaded', async () => {
+  await loadFromDb();
   renderStats();
   renderMenuList();
 });
@@ -264,7 +254,6 @@ function renderMenuList() {
     return;
   }
 
-  // Group by category
   const groups = {};
   filtered.forEach(item => {
     const cat = item.category || 'อื่นๆ';
@@ -292,12 +281,12 @@ function renderMenuList() {
 }
 
 function renderRow(item) {
-  const activeClass  = item.is_active ? 'text-stone-800' : 'text-stone-400 line-through';
-  const badgeClass   = item.is_active
+  const activeClass = item.is_active ? 'text-stone-800' : 'text-stone-400 line-through';
+  const badgeClass  = item.is_active
     ? 'bg-green-100 text-green-700 border border-green-200'
     : 'bg-stone-100 text-stone-400 border border-stone-200';
-  const toggleLabel  = item.is_active ? 'ปิดเมนู' : 'เปิดเมนู';
-  const toggleClass  = item.is_active
+  const toggleLabel = item.is_active ? 'ปิดเมนู' : 'เปิดเมนู';
+  const toggleClass = item.is_active
     ? 'text-stone-400 hover:text-amber-600 hover:bg-amber-50'
     : 'text-stone-400 hover:text-green-600 hover:bg-green-50';
 
@@ -365,7 +354,7 @@ function closeForm() {
   document.getElementById('form-panel').classList.add('translate-x-full');
 }
 
-function submitForm() {
+async function submitForm() {
   const id        = document.getElementById('form-item-id').value;
   const name      = document.getElementById('form-name').value.trim();
   const price     = parseInt(document.getElementById('form-price').value);
@@ -373,48 +362,55 @@ function submitForm() {
   const catCustom = document.getElementById('form-category-custom').value.trim();
   const category  = catCustom || catSelect;
 
-  if (!name)             { showFormError('กรุณาใส่ชื่อเมนู'); return; }
+  if (!name)              { showFormError('กรุณาใส่ชื่อเมนู'); return; }
   if (!price || price < 0) { showFormError('กรุณาใส่ราคาที่ถูกต้อง'); return; }
 
   if (id) {
-    // Edit existing
     const item = allItems.find(i => i.id === parseInt(id));
-    if (item) {
-      item.name     = name;
-      item.price    = price;
-      item.category = category;
-    }
+    await fetch(`/api/menu/${id}`, {
+      method:  'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ name, price, category, is_active: item ? item.is_active : true }),
+    });
     showNotification(`แก้ไข "${name}" เรียบร้อย`);
   } else {
-    // Add new
-    allItems.push({ id: nextId(), name, price, category, is_active: true });
+    await fetch('/api/menu', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ name, price, category, is_active: true }),
+    });
     showNotification(`เพิ่ม "${name}" เรียบร้อย`);
   }
 
-  saveToStorage();
+  await loadFromDb();
   closeForm();
   renderStats();
   renderMenuList();
 }
 
 // ── Toggle active ─────────────────────────────────────────────
-function toggleActive(itemId) {
+async function toggleActive(itemId) {
   const item = allItems.find(i => i.id === itemId);
   if (!item) return;
-  item.is_active = !item.is_active;
-  saveToStorage();
+  await fetch(`/api/menu/${itemId}`, {
+    method:  'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body:    JSON.stringify({ name: item.name, price: item.price, category: item.category, is_active: !item.is_active }),
+  });
+  await loadFromDb();
   renderStats();
   renderMenuList();
-  showNotification(`"${item.name}" — ${item.is_active ? 'เปิดใช้งาน' : 'ปิดใช้งาน'}แล้ว`);
+  const updated = allItems.find(i => i.id === itemId);
+  showNotification(`"${item.name}" — ${updated?.is_active ? 'เปิดใช้งาน' : 'ปิดใช้งาน'}แล้ว`);
 }
 
 // ── Delete ────────────────────────────────────────────────────
-function deleteItem(itemId) {
+async function deleteItem(itemId) {
   const item = allItems.find(i => i.id === itemId);
   if (!item) return;
   if (!confirm(`ลบ "${item.name}" ออกจากเมนู?\nการกระทำนี้ไม่สามารถย้อนกลับได้`)) return;
-  allItems = allItems.filter(i => i.id !== itemId);
-  saveToStorage();
+  await fetch(`/api/menu/${itemId}`, { method: 'DELETE' });
+  await loadFromDb();
   renderStats();
   renderMenuList();
   showNotification(`ลบ "${item.name}" เรียบร้อย`);

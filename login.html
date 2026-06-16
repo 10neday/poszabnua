@@ -7,25 +7,25 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700;800;900&family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body class="login-page min-h-screen flex items-center justify-center p-4">
 
-  <div class="w-full max-w-[340px] flex flex-col items-center">
+  <div class="w-full max-w-[360px] flex flex-col items-center relative z-10">
 
     <!-- Card -->
-    <div class="w-full bg-white rounded-3xl shadow-2xl shadow-stone-300/40 p-9 flex flex-col items-center">
+    <div class="w-full rounded-3xl p-10 flex flex-col items-center" style="background: rgba(255,255,255,0.05); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); border: 1px solid rgba(255,255,255,0.08); box-shadow: 0 32px 64px -12px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05);">
 
       <!-- Brand -->
-      <div class="w-20 h-20 rounded-2xl brand-logo flex items-center justify-center text-white font-extrabold text-3xl mb-5 font-eng shadow-lg shadow-orange-300/50">
+      <div class="w-22 h-22 rounded-2xl brand-logo flex items-center justify-center text-white font-extrabold text-3xl mb-6 font-eng" style="width: 88px; height: 88px;">
         ZN
       </div>
-      <h1 class="text-2xl font-extrabold text-stone-900 tracking-tight">แซ่บนัว</h1>
-      <p class="text-xs text-stone-400 font-medium mt-1 mb-8">Zabnua Restaurant · สาขากาญจนบุรี</p>
+      <h1 class="text-2xl font-extrabold text-white tracking-tight" style="font-family: var(--font-thai);">แซ่บนัว</h1>
+      <p class="text-xs font-medium mt-1.5 mb-8" style="color: rgba(255,255,255,0.45);">Zabnua Restaurant · สาขากาญจนบุรี</p>
 
       <!-- PIN label -->
-      <p class="text-[11px] font-bold text-stone-400 uppercase tracking-widest mb-5">ใส่ PIN เพื่อเข้าใช้งาน</p>
+      <p class="text-[11px] font-bold uppercase tracking-[0.2em] mb-6" style="color: rgba(255,255,255,0.35);">ใส่ PIN เพื่อเข้าใช้งาน</p>
 
       <!-- PIN dots -->
       <div class="flex gap-5 mb-2" id="pin-display">
@@ -36,12 +36,12 @@
       </div>
 
       <!-- Error -->
-      <p id="pin-error" class="text-xs text-red-500 font-semibold h-5 mt-3 mb-5 opacity-0 transition-opacity duration-300 text-center">
+      <p id="pin-error" class="text-xs font-semibold h-5 mt-3 mb-5 opacity-0 transition-opacity duration-300 text-center" style="color: #fb7185;">
         PIN ไม่ถูกต้อง กรุณาลองใหม่อีกครั้ง
       </p>
 
       <!-- Numpad -->
-      <div class="grid grid-cols-3 gap-2.5 w-full">
+      <div class="grid grid-cols-3 gap-3 w-full">
         <button class="numpad-key" onclick="pressPin('1')">1</button>
         <button class="numpad-key" onclick="pressPin('2')">2</button>
         <button class="numpad-key" onclick="pressPin('3')">3</button>
@@ -62,7 +62,7 @@
 
     </div>
 
-    <p class="text-xs text-stone-400 mt-6 font-medium">แซ่บนัว POS System · v2.0</p>
+    <p class="text-xs mt-6 font-medium" style="color: rgba(255,255,255,0.3);">แซ่บนัว POS System · v2.0</p>
   </div>
 
   <script src="login.js"></script>
