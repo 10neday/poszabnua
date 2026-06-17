@@ -1,13 +1,13 @@
 {
   "C:\\Users\\tor17\\Desktop\\VSCODE PROJECTS\\POSZABNUA\\admin.js": {
-    "mtime": 1781509516.345538,
-    "ast_hash": "3992a224bcf619077c5e7cb697a0fa8b",
-    "semantic_hash": "3992a224bcf619077c5e7cb697a0fa8b"
+    "mtime": 1781632253.6940565,
+    "ast_hash": "35d44a812db518b2eda723c6862238f3",
+    "semantic_hash": "35d44a812db518b2eda723c6862238f3"
   },
   "C:\\Users\\tor17\\Desktop\\VSCODE PROJECTS\\POSZABNUA\\app.js": {
-    "mtime": 1781509967.087809,
-    "ast_hash": "553a7e20d6118bde1a5130d0130554fe",
-    "semantic_hash": "553a7e20d6118bde1a5130d0130554fe"
+    "mtime": 1781634743.6653624,
+    "ast_hash": "af2b7f96808d9391cd844294853899c2",
+    "semantic_hash": "af2b7f96808d9391cd844294853899c2"
   },
   "C:\\Users\\tor17\\Desktop\\VSCODE PROJECTS\\POSZABNUA\\config.js": {
     "mtime": 1781496727.40075,
@@ -20,33 +20,53 @@
     "semantic_hash": "b7dca94eac1bd2de209b9463cf043fb5"
   },
   "C:\\Users\\tor17\\Desktop\\VSCODE PROJECTS\\POSZABNUA\\report.js": {
-    "mtime": 1781496727.40075,
-    "ast_hash": "66c6aef781ec1c608e31217fd1b6715f",
-    "semantic_hash": "66c6aef781ec1c608e31217fd1b6715f"
+    "mtime": 1781632294.2009027,
+    "ast_hash": "d0f0285391f771d4b94589bc84dcfe88",
+    "semantic_hash": "d0f0285391f771d4b94589bc84dcfe88"
   },
   "C:\\Users\\tor17\\Desktop\\VSCODE PROJECTS\\POSZABNUA\\README.md": {
-    "mtime": 1781498577.6766114,
-    "ast_hash": "00c5e8b1f99c8ec72ed0302d28a2b959",
-    "semantic_hash": "00c5e8b1f99c8ec72ed0302d28a2b959"
+    "mtime": 1781633397.597195,
+    "ast_hash": "7a04394c3a401404a5ea6ea8766571a8",
+    "semantic_hash": "7a04394c3a401404a5ea6ea8766571a8"
   },
   "C:\\Users\\tor17\\Desktop\\VSCODE PROJECTS\\POSZABNUA\\admin.html": {
-    "mtime": 1781509475.8438206,
+    "mtime": 1781586232.7262168,
     "ast_hash": "bc73dce9ed73a69949e1cbc0c8c45760",
     "semantic_hash": "bc73dce9ed73a69949e1cbc0c8c45760"
   },
   "C:\\Users\\tor17\\Desktop\\VSCODE PROJECTS\\POSZABNUA\\index.html": {
-    "mtime": 1781510395.580479,
-    "ast_hash": "3828efbf9196c04041111fbfac9a17b0",
-    "semantic_hash": "3828efbf9196c04041111fbfac9a17b0"
+    "mtime": 1781634222.4796972,
+    "ast_hash": "ff016a0baf782be1341d0f3407d53107",
+    "semantic_hash": "ff016a0baf782be1341d0f3407d53107"
   },
   "C:\\Users\\tor17\\Desktop\\VSCODE PROJECTS\\POSZABNUA\\login.html": {
-    "mtime": 1781496727.40075,
-    "ast_hash": "12b3a0239ff6efb5d95b6c80a3830860",
-    "semantic_hash": "12b3a0239ff6efb5d95b6c80a3830860"
+    "mtime": 1781682321.3773422,
+    "ast_hash": "60bc4add4e2df4fe039fab861bac5643",
+    "semantic_hash": "60bc4add4e2df4fe039fab861bac5643"
   },
   "C:\\Users\\tor17\\Desktop\\VSCODE PROJECTS\\POSZABNUA\\report.html": {
-    "mtime": 1781496727.40075,
-    "ast_hash": "ac45a67c5404de9a0e89394957f794a0",
-    "semantic_hash": "ac45a67c5404de9a0e89394957f794a0"
+    "mtime": 1781586181.5906868,
+    "ast_hash": "fe64a2454e762b8f2b3b1283494048c4",
+    "semantic_hash": "fe64a2454e762b8f2b3b1283494048c4"
+  },
+  "C:\\Users\\tor17\\Desktop\\VSCODE PROJECTS\\POSZABNUA\\.claude\\settings.local.json": {
+    "mtime": 1781515547.211159,
+    "ast_hash": "286234bd7a1a99ed0af70efa3fa381cc",
+    "semantic_hash": "286234bd7a1a99ed0af70efa3fa381cc"
+  },
+  "C:\\Users\\tor17\\Desktop\\VSCODE PROJECTS\\POSZABNUA\\db.js": {
+    "mtime": 1781679515.2881155,
+    "ast_hash": "32ce263f95f68581a3e1e12bb4eb30bc",
+    "semantic_hash": "32ce263f95f68581a3e1e12bb4eb30bc"
+  },
+  "C:\\Users\\tor17\\Desktop\\VSCODE PROJECTS\\POSZABNUA\\package.json": {
+    "mtime": 1781631742.247234,
+    "ast_hash": "d67905e52a3c29218e12891a24e3ee87",
+    "semantic_hash": "d67905e52a3c29218e12891a24e3ee87"
+  },
+  "C:\\Users\\tor17\\Desktop\\VSCODE PROJECTS\\POSZABNUA\\server.js": {
+    "mtime": 1781680053.7423267,
+    "ast_hash": "71fac64633e146488db072f98254fbf5",
+    "semantic_hash": "71fac64633e146488db072f98254fbf5"
   }
 }
