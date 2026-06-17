@@ -158,6 +158,6 @@ initDb()
     app.listen(PORT, () => console.log(`Server running at http://localhost:${PORT}`));
   })
   .catch(e => {
-    console.error('DB init failed:', e.message);
+    console.error('DB init failed:', e);
     process.exit(1);
   });
