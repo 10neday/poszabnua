@@ -37,6 +37,14 @@ async function initDb() {
       timestamp   TIMESTAMPTZ DEFAULT NOW()
     )
   `);
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS active_tables (
+      table_id   INT PRIMARY KEY,
+      zone       TEXT,
+      orders     JSONB        DEFAULT '[]',
+      checked_in TIMESTAMPTZ  DEFAULT NOW()
+    )
+  `);
 }
 
 function rowToSale(r) {
@@ -115,6 +123,41 @@ app.delete('/api/menu/:id', async (req, res) => {
   }
 });
 
+// ── Active tables routes ──────────────────────────────────────
+app.get('/api/active-tables', async (req, res) => {
+  try {
+    const { rows } = await pool.query('SELECT * FROM active_tables');
+    res.json(rows);
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+app.put('/api/active-tables/:tableId', async (req, res) => {
+  const { zone, orders } = req.body;
+  try {
+    const { rows } = await pool.query(
+      `INSERT INTO active_tables (table_id, zone, orders)
+       VALUES ($1, $2, $3)
+       ON CONFLICT (table_id) DO UPDATE SET orders = $3
+       RETURNING *`,
+      [req.params.tableId, zone, JSON.stringify(orders)]
+    );
+    res.json(rows[0]);
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+app.delete('/api/active-tables/:tableId', async (req, res) => {
+  try {
+    await pool.query('DELETE FROM active_tables WHERE table_id = $1', [req.params.tableId]);
+    res.json({ ok: true });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
 // ── Sales routes ──────────────────────────────────────────────
 app.get('/api/sales', async (req, res) => {
   try {
@@ -155,7 +198,7 @@ app.delete('/api/sales', async (req, res) => {
 // ── Start ─────────────────────────────────────────────────────
 initDb()
   .then(() => {
-    app.listen(PORT, () => console.log(`Server running at http://localhost:${PORT}`));
+    app.listen(PORT, '0.0.0.0', () => console.log(`Server running at http://localhost:${PORT}`));
   })
   .catch(e => {
     console.error('DB init failed:', e);

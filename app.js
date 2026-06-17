@@ -53,11 +53,41 @@ async function loadTodayRevenue() {
 let discountMode = 'amount'; // 'amount' | 'percent'
 let splitCount   = 1;
 
+// ── Active table persistence ──────────────────────────────────
+async function loadActiveTables() {
+  try {
+    const res  = await fetch('/api/active-tables');
+    const rows = await res.json();
+    rows.forEach(row => {
+      const table = tables.find(t => t.id === row.table_id);
+      if (table) {
+        table.status = 'occupied';
+        table.orders = row.orders || [];
+      }
+    });
+  } catch {}
+}
+
+async function saveTableState(tableId) {
+  const table = tables.find(t => t.id === tableId);
+  if (!table) return;
+  if (table.status === 'occupied') {
+    await fetch(`/api/active-tables/${tableId}`, {
+      method:  'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ zone: table.zone, orders: table.orders }),
+    });
+  } else {
+    await fetch(`/api/active-tables/${tableId}`, { method: 'DELETE' });
+  }
+}
+
 // ── Boot ──────────────────────────────────────────────────────
 window.addEventListener('DOMContentLoaded', async () => {
   updateClock();
   setInterval(updateClock, 1000);
   showAdminLink();
+  await loadActiveTables();
   renderFloorMap();
   totalRevenue = await loadTodayRevenue();
   updateStats();
@@ -177,12 +207,13 @@ function renderTableDetails(table) {
 }
 
 // ── Check-in ──────────────────────────────────────────────────
-function handleCheckIn() {
+async function handleCheckIn() {
   if (activeTableId === null) return;
   const table = tables.find(t => t.id === activeTableId);
   if (table && table.status === 'available') {
     table.status = 'occupied';
     table.orders = [];
+    await saveTableState(table.id);
     renderTableDetails(table);
     renderFloorMap();
     updateStats();
@@ -223,13 +254,14 @@ function renderOrderSummaryTable(table) {
   document.getElementById('order-total-amount').innerText = `฿${total.toLocaleString()}`;
 }
 
-function adjustItemQty(tableId, itemIndex, delta) {
+async function adjustItemQty(tableId, itemIndex, delta) {
   const table = tables.find(t => t.id === tableId);
   if (!table) return;
   const item = table.orders[itemIndex];
   if (!item) return;
   item.qty += delta;
   if (item.qty <= 0) table.orders.splice(itemIndex, 1);
+  await saveTableState(tableId);
   renderTableDetails(table);
   updateStats();
 }
@@ -335,7 +367,7 @@ function selectMenuItem(index) {
   document.getElementById('menu-search-results').classList.add('hidden');
 }
 
-function handleAddMenuItem() {
+async function handleAddMenuItem() {
   if (activeTableId === null) return;
   const table = tables.find(t => t.id === activeTableId);
   if (!table || table.status !== 'occupied') return;
@@ -351,6 +383,7 @@ function handleAddMenuItem() {
     table.orders.push({ menu: selected.name, price: selected.price, qty });
   }
 
+  await saveTableState(activeTableId);
   hideAddMenuPanel();
   renderTableDetails(table);
   updateStats();
@@ -601,7 +634,7 @@ async function handleCheckBill() {
     scale: 2,
     useCORS: true,
     logging: false
-  }).then(canvas => {
+  }).then(async canvas => {
     const link    = document.createElement('a');
     link.download = `receipt_table${table.id}_${Date.now()}.jpg`;
     link.href     = canvas.toDataURL('image/jpeg', 0.95);
@@ -611,15 +644,17 @@ async function handleCheckBill() {
     table.orders  = [];
     table.status  = 'available';
     splitCount    = 1;
+    await saveTableState(table.id);
     closeDetailsDrawer();
     updateStats();
     renderFloorMap();
     showNotification(`เช็คบิล โต๊ะ ${table.id} สำเร็จ — ดาวน์โหลดใบเสร็จแล้ว`);
-  }).catch(() => {
+  }).catch(async () => {
     totalRevenue += finalTotal;
     table.orders  = [];
     table.status  = 'available';
     splitCount    = 1;
+    await saveTableState(table.id);
     closeDetailsDrawer();
     updateStats();
     renderFloorMap();
